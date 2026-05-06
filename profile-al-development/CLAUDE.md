@@ -58,7 +58,9 @@ Classify every user request by complexity, then invoke the matching skill:
 - `/publish` — Deploy .app to BC server
 - `/run-tests` — Execute AL test codeunits via bc-test
 
-### Knowledge Skills (auto-loaded when relevant)
-- `al-coding-standards` — PascalCase, namespaces, affixes, SetLoadFields
+### Knowledge Skills (invoke for detailed examples)
+- `al-coding-standards` — Worked correct/incorrect AL examples (rules in `rules/` cover the standing guidance)
 - `build-tools` — Build pipeline quick reference
 - `review-checklists` — Quality checks for plans, code, and tests
+
+Rules in `rules/` (auto-loaded — `al-engineering.md` always; `al-architecture.md`, `al-naming.md`, `al-data-access.md`, `al-conventions.md` when an `*.al` file is in context) provide standing AL guardrails without skill invocation.

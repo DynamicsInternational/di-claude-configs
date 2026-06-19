@@ -52,14 +52,19 @@ Classify every user request by complexity, then invoke the matching skill:
 - `/fix` — Quick fix (3 tiers: haiku/sonnet/opus)
 - `/test` — Parallel test development (4 engineers)
 - `/document` — Technical documentation generation
+- `/verify-tests` — Adversarial test verification (mutation sweeps, assertion audit)
 
-### Build Skills (invoke with /)
+### Build & Test Skills (invoke with /)
 - `/compile` — Run al-compile with analyzer options
 - `/publish` — Deploy .app to BC server
-- `/run-tests` — Execute AL test codeunits via bc-test
+- `/run-tests` — Execute AL test codeunits (al-runner / bc-test)
+- `/local-bc` — Manage a local BC instance for dev/testing
+- `/al-symbols` — Download dependency symbol packages from Microsoft NuGet feeds
+- `/al-mutate` — Mutation testing to surface test-suite gaps
 
 ### Knowledge Skills (invoke for detailed examples)
 - `build-tools` — Build pipeline quick reference
 - `review-checklists` — Quality checks for plans, code, and tests
+- `bc-source` — Look up BC base app source (tables, pages, codeunits, events)
 
 Rules in `rules/` (auto-loaded — `al-engineering.md` always; `al-architecture.md`, `al-naming.md`, `al-data-access.md`, `al-conventions.md` when an `*.al` file is in context) provide standing AL guardrails without skill invocation.

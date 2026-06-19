@@ -12,6 +12,15 @@
       ],
       "env": {}
     },
+    "bc-source-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "bc-source-mcp"
+      ],
+      "env": {}
+    },
     "bc-code-intelligence-mcp": {
       "type": "stdio",
       "command": "bc-code-intelligence-mcp",

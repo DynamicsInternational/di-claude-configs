@@ -67,4 +67,9 @@ Classify every user request by complexity, then invoke the matching skill:
 - `review-checklists` — Quality checks for plans, code, and tests
 - `bc-source` — Look up BC base app source (tables, pages, codeunits, events)
 
+### BC source lookup: which tool?
+- **`al-mcp-server`** (AL Dependency MCP) — symbols of the **current project's actual dependencies** (what compiles). Use for events/objects you subscribe to or extend in *this* project.
+- **`bc-source-mcp`** (driven by `/bc-source`) — full base-app **source history** across all BC versions and localizations. Use to read implementations, compare versions, or inspect objects/events not present in the project's symbols.
+- They overlap on "find a base-app event" — prefer `bc-source-mcp` when you need the implementation or a specific version.
+
 Rules in `rules/` (auto-loaded — `al-engineering.md` always; `al-architecture.md`, `al-naming.md`, `al-data-access.md`, `al-conventions.md` when an `*.al` file is in context) provide standing AL guardrails without skill invocation.

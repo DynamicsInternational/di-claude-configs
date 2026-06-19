@@ -135,16 +135,20 @@ All workflow output goes to `.dev/<task-slug>/`, where `<task-slug>` is auto-gen
 
 ## MCP Server Configuration
 
-This profile configures four MCP servers in `.mcp.json`:
+This profile configures five MCP servers in `.mcp.json`:
 
 | Server | Type | Purpose |
 |--------|------|---------|
 | `bc-code-intelligence-mcp` | stdio | BC specialist consultations (built-in embedded knowledge base, 17 specialists) |
 | `microsoft_docs_mcp` | http | Official AL/BC documentation lookup |
-| `al-mcp-server` | stdio (npx) | Base app object navigation, event discovery, dependency analysis |
+| `al-mcp-server` | stdio (npx) | Symbols of the **current project's dependencies** — object navigation, event discovery, dependency analysis |
+| `bc-source-mcp` | stdio (npx) | Full base-app **source history** across BC versions/localizations (drives `/bc-source`) |
 | `alcops` | stdio | AL code-quality analysis and fixes |
 
-Additional MCP servers (e.g. BC source, NAB AL Tools, BCQuality) may be supplied by your user or project settings; they are intentionally **not** bundled in this plugin's `.mcp.json`.
+`al-mcp-server` vs `bc-source-mcp` overlap on base-app event/object discovery: prefer
+`bc-source-mcp` when you need the implementation or a specific version, `al-mcp-server` when
+you only need what the current project actually compiles against. Other servers (e.g. NAB AL
+Tools, BCQuality) may be supplied by your user or project settings.
 
 ## Directory Structure
 
@@ -152,7 +156,7 @@ Additional MCP servers (e.g. BC source, NAB AL Tools, BCQuality) may be supplied
 profile-al-development/
 ├── .claude-plugin/
 │   └── plugin.json           # Plugin metadata
-├── .mcp.json                 # MCP server configuration (4 servers)
+├── .mcp.json                 # MCP server configuration (5 servers)
 ├── CLAUDE.md                 # Lead-as-Manager profile instructions
 ├── README.md                 # This file
 ├── agents/

@@ -16,18 +16,10 @@
       "type": "stdio",
       "command": "bc-code-intelligence-mcp",
       "args": [],
-      "env": {
-        "BC_CODE_INTEL_CONFIG": "~/claude-configs/profile-al-development/bc-code-intel-config.json"
-      }
+      "env": {}
     },
     "alcops": {
       "command": "alcops-mcp"
-    },
-    "bc-telemetry-buddy": {
-      "type": "stdio",
-      "command": "bctb-mcp",
-      "args": ["start", "--config", "/home/stefan/claude-configs/profile-al-development/bctb-config.json"],
-      "env": {}
     }
   }
 }

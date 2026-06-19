@@ -84,6 +84,7 @@ Invoke with `/`. Skills marked *(reference)* are auto-loaded knowledge rather th
 - `/local-bc` — Manage a local BC instance for dev/testing
 - `/al-symbols` — Download dependency symbol packages from Microsoft NuGet feeds
 - `/al-mutate` — Mutation testing to surface test-suite gaps (no BC instance required)
+- `/translate` — Localize XLIFF files (fr-FR default; other languages if specified); runs at the end of `/develop`
 
 ### Knowledge & Lookup Skills
 - `build-tools` *(reference)* — Build pipeline quick reference (auto-loads on compile/deploy/test)
@@ -138,7 +139,7 @@ All workflow output goes to `.dev/<task-slug>/`, where `<task-slug>` is auto-gen
 
 ## MCP Server Configuration
 
-This profile configures six MCP servers in `.mcp.json`:
+This profile configures seven MCP servers in `.mcp.json`:
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -147,6 +148,7 @@ This profile configures six MCP servers in `.mcp.json`:
 | `al-mcp-server` | stdio (npx) | Symbols of the **current project's dependencies** — object navigation, event discovery, dependency analysis |
 | `bc-source-mcp` | stdio (npx) | Full base-app **source history** across BC versions/localizations (drives `/bc-source`) |
 | `bcquality-mcp` | stdio (npx) | BCQuality best-practice rule corpus (microsoft/community/**custom** layers; drives `/bcquality-citation`). Set to the DI fork via `BCQUALITY_REPO_URL` |
+| `nab-al-tools` | stdio (npx) | XLIFF localization tooling (drives `/translate`) |
 | `alcops` | stdio | AL code-quality analysis and fixes |
 
 `al-mcp-server` vs `bc-source-mcp` overlap on base-app event/object discovery: prefer
@@ -160,12 +162,12 @@ Tools, BCQuality) may be supplied by your user or project settings.
 profile-al-development/
 ├── .claude-plugin/
 │   └── plugin.json           # Plugin metadata
-├── .mcp.json                 # MCP server configuration (6 servers)
+├── .mcp.json                 # MCP server configuration (7 servers)
 ├── CLAUDE.md                 # Lead-as-Manager profile instructions
 ├── README.md                 # This file
 ├── agents/
 │   └── al-repo-summarizer.md # Standalone repo-summary agent
-├── skills/                   # 18 model-invoked skills (see above)
+├── skills/                   # 19 model-invoked skills (see above)
 ├── rules/                    # 4 auto-loaded AL rule files
 ├── hooks/                    # hooks.json + al-hook-record.js + al-hook-compile.js
 ├── .dev-templates/

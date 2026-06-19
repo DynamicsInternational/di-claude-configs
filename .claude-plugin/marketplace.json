@@ -7,7 +7,7 @@
     {
       "name": "profile-al-development",
       "source": "./profile-al-development",
-      "description": "Lead-as-Manager AL development for Business Central: model-invoked skills, parallel agent teams, standing AL rules, auto-compile hooks, and MCP integration (BC Intelligence, MS Docs, AL Dependency, BC Source, BCQuality, ALCOPS)."
+      "description": "Lead-as-Manager AL development for Business Central: model-invoked skills, parallel agent teams, standing AL rules, auto-compile hooks, and MCP integration (BC Intelligence, MS Docs, AL Dependency, BC Source, BCQuality, NAB AL Tools, ALCOPS)."
     }
   ]
 }

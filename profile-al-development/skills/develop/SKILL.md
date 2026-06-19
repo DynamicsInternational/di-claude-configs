@@ -145,6 +145,16 @@ which best-practices were enforced. Flag any `custom`-layer (DI) rule that took 
 - If compilation fails, assign fixes to the appropriate developer and re-verify.
 - Do not present to the user until compilation is clean.
 
+## Step 9.5: Translate Localization (end of cycle)
+
+Once compilation is clean and the implementation introduced or changed user-facing text
+(captions, tooltips, labels), invoke `/translate` to localize the project. It defaults to
+**French (`fr-FR`)**; pass other language codes if the user or `.dev/project-context.md` requires
+them. The skill syncs the generated `.g.xlf`, fills untranslated units (preserving placeholders
+and locked states), applies the BC glossary, and writes `.dev/<task-slug>/07-translation.md`.
+
+Skip only when no user-facing text changed (e.g. pure refactor or backend-only logic) — say so explicitly.
+
 ## Step 10: Present to User
 
 Use **AskUserQuestion** to present the results:
@@ -156,6 +166,7 @@ Use **AskUserQuestion** to present the results:
 > **Objects created:** <count>
 > **Review status:** <All clear / N issues for your decision>
 > **Compilation:** <Clean / Issues>
+> **Localization:** <fr-FR translated / skipped (no UI text)>
 >
 > <If issues for decision, list them briefly>
 >

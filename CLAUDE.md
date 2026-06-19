@@ -30,7 +30,7 @@ claude-configs/
 │   ├── CLAUDE.md                    # Lead-as-Manager profile instructions
 │   ├── agents/                      # Standalone agents
 │   │   └── al-repo-summarizer.md    # (workflow specialists are spawned by skills)
-│   ├── skills/                      # 18 model-invoked skills (/-prefixed)
+│   ├── skills/                      # 19 model-invoked skills (/-prefixed)
 │   │   ├── init-context/  interview/  plan/  develop/  fix/  test/  document/
 │   │   ├── compile/  publish/  run-tests/  local-bc/  al-symbols/  al-mutate/
 │   │   └── build-tools/  review-checklists/  bc-source/  verify-tests/
@@ -82,7 +82,7 @@ All artifacts land in `.dev/<task-slug>/` (`01-requirements.md`, `02-solution-pl
 
 ### MCP Server Integration
 
-The AL profile configures six MCP servers in `.mcp.json`:
+The AL profile configures seven MCP servers in `.mcp.json`:
 
 1. **BC Code Intelligence MCP** (`bc-code-intelligence-mcp`)
    - BC specialist consultations via structured personas
@@ -104,11 +104,14 @@ The AL profile configures six MCP servers in `.mcp.json`:
    - BCQuality best-practice rule corpus (microsoft/community/custom layers)
    - Custom layer = DI fork (`BCQUALITY_REPO_URL`); drives `/bcquality-citation` (runs via npx)
 
-6. **ALCOPS MCP** (`alcops`)
+6. **NAB AL Tools MCP** (`nab-al-tools`)
+   - XLIFF localization tooling — drives the `/translate` skill (runs via npx)
+
+7. **ALCOPS MCP** (`alcops`)
    - AL code-quality analysis and automated fixes
 
-Other MCP servers (e.g. NAB AL Tools) may be supplied by your user or project settings — they
-are intentionally **not** bundled in this plugin's `.mcp.json`.
+Other MCP servers may be supplied by your user or project settings — they are intentionally
+**not** bundled in this plugin's `.mcp.json`.
 
 ## Common Development Tasks
 

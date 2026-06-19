@@ -38,6 +38,15 @@
         "BCQUALITY_REPO_URL": "https://github.com/DynamicsInternational/BCQuality.git"
       }
     },
+    "nab-al-tools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@nabsolutions/nab-al-tools-mcp"
+      ],
+      "env": {}
+    },
     "alcops": {
       "command": "alcops-mcp"
     }

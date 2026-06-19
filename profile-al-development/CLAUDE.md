@@ -53,6 +53,7 @@ Classify every user request by complexity, then invoke the matching skill:
 - `/test` — Parallel test development (4 engineers)
 - `/document` — Technical documentation generation
 - `/verify-tests` — Adversarial test verification (mutation sweeps, assertion audit)
+- `/translate` — Localize XLIFF files (fr-FR default; other languages if specified); runs at the end of `/develop`
 
 ### Build & Test Skills (invoke with /)
 - `/compile` — Run al-compile with analyzer options

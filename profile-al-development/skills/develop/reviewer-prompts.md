@@ -4,6 +4,29 @@ This file contains the complete prompts for all 4 specialist reviewers. Each sec
 
 ---
 
+## BCQuality grounding — applies to ALL reviewers (CHECK mode, MANDATORY)
+
+Follow the `/bcquality-citation` protocol in **CHECK** mode. Verify the code against the BCQuality
+corpus for your mapped domain(s) and **cite every finding by its rule path**:
+
+| Reviewer | BCQuality domain(s) |
+|----------|---------------------|
+| Security Reviewer | `security`, `privacy` |
+| AL Expert Reviewer | `style`, `ui`, `upgrade` |
+| Performance Reviewer | `performance` |
+| Test Coverage Reviewer | `testing` |
+
+Query with `bcquality_list_knowledge { domain: "<domain>" }` and `bcquality_get_knowledge { path }`.
+The `custom` layer carries Dynamics International standards and overrides Microsoft/community.
+
+**Citation rule:** every finding in your output tables must carry a `BCQuality Ref` — the rule path
+that backs it (e.g. `performance/use-setloadfields-for-partial-records.md`). Add it as a final
+column to each table, or `n/a` if the finding is a genuine judgement call with no corresponding
+rule (label those explicitly as opinion, not rule). These paths flow into the user-facing
+`03-code-review.md` deliverable.
+
+---
+
 ## Security Reviewer
 
 ### Mission

@@ -30,13 +30,13 @@ claude-configs/
 │   ├── CLAUDE.md                    # Lead-as-Manager profile instructions
 │   ├── agents/                      # Standalone agents
 │   │   └── al-repo-summarizer.md    # (workflow specialists are spawned by skills)
-│   ├── skills/                      # 17 model-invoked skills (/-prefixed)
+│   ├── skills/                      # 18 model-invoked skills (/-prefixed)
 │   │   ├── init-context/  interview/  plan/  develop/  fix/  test/  document/
 │   │   ├── compile/  publish/  run-tests/  local-bc/  al-symbols/  al-mutate/
 │   │   └── build-tools/  review-checklists/  bc-source/  verify-tests/
 │   ├── rules/                       # 5 auto-loaded AL guardrail files
 │   │   ├── al-engineering.md        # Always loaded
-│   │   ├── al-architecture.md  al-naming.md  al-data-access.md  al-conventions.md
+│   │   ├── al-architecture.md  al-naming.md  al-conventions.md
 │   ├── hooks/                       # hooks.json + al-hook-record.js + al-hook-compile.js
 │   ├── .dev-templates/              # Template for /init-context
 │   ├── *.md                         # Shared reference docs (tdd-workflow, workflow-routing,
@@ -82,7 +82,7 @@ All artifacts land in `.dev/<task-slug>/` (`01-requirements.md`, `02-solution-pl
 
 ### MCP Server Integration
 
-The AL profile configures four MCP servers in `.mcp.json`:
+The AL profile configures six MCP servers in `.mcp.json`:
 
 1. **BC Code Intelligence MCP** (`bc-code-intelligence-mcp`)
    - BC specialist consultations via structured personas
@@ -93,15 +93,22 @@ The AL profile configures four MCP servers in `.mcp.json`:
    - HTTP-based MCP server
 
 3. **AL Dependency MCP** (`al-mcp-server`)
-   - Base app object navigation
-   - Event discovery and dependency analysis
-   - Runs via npx
+   - Symbols of the current project's dependencies
+   - Object navigation, event discovery, dependency analysis (runs via npx)
 
-4. **ALCOPS MCP** (`alcops`)
+4. **BC Source MCP** (`bc-source-mcp`)
+   - Full base-app source history across BC versions/localizations
+   - Drives the `/bc-source` skill (runs via npx)
+
+5. **BCQuality MCP** (`bcquality-mcp`)
+   - BCQuality best-practice rule corpus (microsoft/community/custom layers)
+   - Custom layer = DI fork (`BCQUALITY_REPO_URL`); drives `/bcquality-citation` (runs via npx)
+
+6. **ALCOPS MCP** (`alcops`)
    - AL code-quality analysis and automated fixes
 
-Additional MCP servers (e.g. BC source, NAB AL Tools, BCQuality) may be supplied by your
-user or project settings — they are intentionally **not** bundled in this plugin's `.mcp.json`.
+Other MCP servers (e.g. NAB AL Tools) may be supplied by your user or project settings — they
+are intentionally **not** bundled in this plugin's `.mcp.json`.
 
 ## Common Development Tasks
 

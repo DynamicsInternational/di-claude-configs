@@ -27,6 +27,17 @@
       "args": [],
       "env": {}
     },
+    "bcquality-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "bcquality-mcp"
+      ],
+      "env": {
+        "BCQUALITY_REPO_URL": "https://github.com/DynamicsInternational/BCQuality.git"
+      }
+    },
     "alcops": {
       "command": "alcops-mcp"
     }

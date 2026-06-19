@@ -71,6 +71,7 @@ Each agent prompt must include:
 - Their ID range
 - The output path: `.dev/<task-slug>/` for any intermediate files
 - Instruction to write test codeunits to the project's test directory (e.g., `test/` or `src/test/`)
+- The `/bcquality-citation` protocol against the `testing` domain (apply and cite the rules — see `test-engineer-prompts.md` header)
 
 ## Step 6: Monitor Test Development
 
@@ -186,6 +187,11 @@ Write `.dev/<task-slug>/05-test-plan.md` as YOUR synthesis (not agent output). I
 
 ### What's NOT Covered (and Why)
 - ...
+
+## Standards Applied (BCQuality)
+The `testing`-domain BCQuality rules the suite follows, cited by path — so the user sees which
+best-practices were enforced (e.g. test isolation, meaningful assertions). Note any `custom`-layer
+(DI) rule that took precedence.
 ```
 
 ## Step 10: Present to User

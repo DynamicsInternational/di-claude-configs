@@ -218,6 +218,10 @@ List uncovered procedures and untested branches explicitly.
 
 If `.dev/<task-slug>/02-solution-plan.md` was provided, also check whether the test suite covers the scenarios and acceptance criteria in the plan.
 
+Cross-check the suite against the BCQuality `testing` domain (`/bcquality-citation`, CHECK mode):
+`bcquality_list_knowledge { domain: "testing" }`. Where a test violates a rule (weak isolation,
+vacuous assertion, …), cite the rule path in your verdict. The `custom` layer carries DI standards.
+
 ---
 
 ## Step 8: Produce Verdict
@@ -284,6 +288,11 @@ List specific, actionable fixes ordered by severity:
 1. **[CRITICAL]** Add test for <specific scenario> — mutation M011 at <location> goes undetected
 2. **[MAJOR]** Strengthen assertion in `<TestName>` — currently WEAK
 3. **[MINOR]** Add edge case test for <boundary>
+
+## Standards Applied (BCQuality)
+
+The `testing`-domain BCQuality rules referenced in this review, cited by path. Note any violation
+of a `custom`-layer (DI) rule.
 
 ## What Survived
 

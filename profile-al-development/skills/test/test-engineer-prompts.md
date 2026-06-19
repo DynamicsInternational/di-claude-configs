@@ -4,6 +4,22 @@ Combined prompts for all 4 test engineer specialists. The orchestrator selects t
 
 ---
 
+## BCQuality grounding — applies to ALL test engineers (MANDATORY)
+
+Follow the `/bcquality-citation` protocol against the **`testing`** domain. Before writing tests,
+pull the applicable rules and patterns:
+
+```
+bcquality_list_knowledge  { domain: "testing" }
+bcquality_get_examples    { path: "<rule path>" }
+```
+
+Apply them (test isolation, meaningful assertions, AAA structure, …); the `custom` layer carries
+Dynamics International standards. List the BCQuality rule paths you applied under a `references:`
+line in your report so they flow into the user-facing `05-test-plan.md` deliverable.
+
+---
+
 ## Unit Test Engineer
 
 **Model:** sonnet

@@ -66,10 +66,16 @@ Classify every user request by complexity, then invoke the matching skill:
 - `build-tools` — Build pipeline quick reference
 - `review-checklists` — Quality checks for plans, code, and tests
 - `bc-source` — Look up BC base app source (tables, pages, codeunits, events)
+- `bcquality-citation` — Ground design/code/review in the BCQuality rule corpus and cite it by path
 
 ### BC source lookup: which tool?
 - **`al-mcp-server`** (AL Dependency MCP) — symbols of the **current project's actual dependencies** (what compiles). Use for events/objects you subscribe to or extend in *this* project.
 - **`bc-source-mcp`** (driven by `/bc-source`) — full base-app **source history** across all BC versions and localizations. Use to read implementations, compare versions, or inspect objects/events not present in the project's symbols.
 - They overlap on "find a base-app event" — prefer `bc-source-mcp` when you need the implementation or a specific version.
 
-Rules in `rules/` (auto-loaded — `al-engineering.md` always; `al-architecture.md`, `al-naming.md`, `al-data-access.md`, `al-conventions.md` when an `*.al` file is in context) provide standing AL guardrails without skill invocation.
+### Best-practice grounding: which source?
+- **`rules/`** (auto-loaded) — terse non-negotiable guardrails. Always present, offline.
+- **`bcquality-mcp`** (via `/bcquality-citation`) — deep, citable rule corpus + good/bad examples; `custom` layer carries DI house standards. Pull at design/generate/check points.
+- **`bc-code-intelligence-mcp`** — open-ended expert consultation (personas, architecture), not rule citation.
+
+Rules in `rules/` (auto-loaded — `al-engineering.md` always; `al-architecture.md`, `al-naming.md`, `al-conventions.md` when an `*.al` file is in context) provide standing AL guardrails without skill invocation. Field classification, captions, and most performance/style rules now live in BCQuality — see `/bcquality-citation`.

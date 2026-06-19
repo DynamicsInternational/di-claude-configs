@@ -55,6 +55,19 @@ For non-trivial tasks, use MCP tools to research:
 
 Skip this for SIMPLE tasks where the approach is obvious.
 
+### 3b. Ground in BCQuality (MANDATORY — DESIGN mode)
+
+Follow the `/bcquality-citation` protocol in **DESIGN** mode. Make one scoped call:
+
+```
+bcquality_get_applicable_for_context  { goal: "<the feature goal>", bcVersion: <from app.json> }
+```
+
+Treat the returned rules as **binding design constraints** (the `custom` layer carries Dynamics
+International house standards and overrides Microsoft/community). Cite the rule paths in the
+"BC Integration" and "Alternatives Considered" sections of your output via a `references:` list.
+A design choice that contradicts a `custom`-layer rule must be justified explicitly or dropped.
+
 ### 4. Explore Codebase
 
 Only explore areas NOT already covered by project context. Look for:

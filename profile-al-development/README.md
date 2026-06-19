@@ -89,6 +89,7 @@ Invoke with `/`. Skills marked *(reference)* are auto-loaded knowledge rather th
 - `build-tools` *(reference)* — Build pipeline quick reference (auto-loads on compile/deploy/test)
 - `review-checklists` *(reference)* — Quality checklists for plans, code, and tests
 - `bc-source` — Look up BC base application source (tables, pages, codeunits, events)
+- `bcquality-citation` *(reference)* — Ground design/code/review in the BCQuality rule corpus and cite it by path
 
 ## Agents
 
@@ -105,8 +106,10 @@ Files in `rules/` provide AL guardrails without any skill invocation:
 | `al-engineering.md` | Always |
 | `al-architecture.md` | An `*.al` file is in context |
 | `al-naming.md` | An `*.al` file is in context |
-| `al-data-access.md` | An `*.al` file is in context |
 | `al-conventions.md` | An `*.al` file is in context |
+
+Field classification, captions, and most performance/style rules are deferred to the BCQuality
+corpus (consulted on demand via `/bcquality-citation`) rather than duplicated as static rules.
 
 ## Hooks
 
@@ -135,7 +138,7 @@ All workflow output goes to `.dev/<task-slug>/`, where `<task-slug>` is auto-gen
 
 ## MCP Server Configuration
 
-This profile configures five MCP servers in `.mcp.json`:
+This profile configures six MCP servers in `.mcp.json`:
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -143,6 +146,7 @@ This profile configures five MCP servers in `.mcp.json`:
 | `microsoft_docs_mcp` | http | Official AL/BC documentation lookup |
 | `al-mcp-server` | stdio (npx) | Symbols of the **current project's dependencies** — object navigation, event discovery, dependency analysis |
 | `bc-source-mcp` | stdio (npx) | Full base-app **source history** across BC versions/localizations (drives `/bc-source`) |
+| `bcquality-mcp` | stdio (npx) | BCQuality best-practice rule corpus (microsoft/community/**custom** layers; drives `/bcquality-citation`). Set to the DI fork via `BCQUALITY_REPO_URL` |
 | `alcops` | stdio | AL code-quality analysis and fixes |
 
 `al-mcp-server` vs `bc-source-mcp` overlap on base-app event/object discovery: prefer
@@ -156,13 +160,13 @@ Tools, BCQuality) may be supplied by your user or project settings.
 profile-al-development/
 ├── .claude-plugin/
 │   └── plugin.json           # Plugin metadata
-├── .mcp.json                 # MCP server configuration (5 servers)
+├── .mcp.json                 # MCP server configuration (6 servers)
 ├── CLAUDE.md                 # Lead-as-Manager profile instructions
 ├── README.md                 # This file
 ├── agents/
 │   └── al-repo-summarizer.md # Standalone repo-summary agent
-├── skills/                   # 17 model-invoked skills (see above)
-├── rules/                    # 5 auto-loaded AL rule files
+├── skills/                   # 18 model-invoked skills (see above)
+├── rules/                    # 4 auto-loaded AL rule files
 ├── hooks/                    # hooks.json + al-hook-record.js + al-hook-compile.js
 ├── .dev-templates/
 │   └── project-context.md    # Template for /init-context

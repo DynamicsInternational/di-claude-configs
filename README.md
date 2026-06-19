@@ -31,9 +31,9 @@ claude-configs/
 
 ## Quick Start Configuration
 
-The plugins work out of the box. The AL profile's `.mcp.json` bundles four MCP servers
-(BC Code Intelligence, Microsoft Docs, AL Dependency, ALCOPS); any extra servers you need
-go in your own user or project settings, not in the plugin.
+The plugins work out of the box. The AL profile's `.mcp.json` bundles six MCP servers
+(BC Code Intelligence, Microsoft Docs, AL Dependency, BC Source, BCQuality, ALCOPS); any extra
+servers you need go in your own user or project settings, not in the plugin.
 
 All paths use `~`, which expands to your home directory automatically.
 

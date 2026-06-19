@@ -40,6 +40,7 @@ Use the Agent tool to spawn 2-3 agents simultaneously. Each agent gets:
 - The requirements (from file or user input)
 - The project context (if available)
 - A **different starting constraint** to prevent convergence
+- The instruction to follow `/bcquality-citation` in **DESIGN** mode (consult BCQuality and cite the applicable rules as design constraints)
 
 Assign different starting constraints such as:
 - "Design around **table extensions** on existing BC tables — minimize new tables"
@@ -76,6 +77,12 @@ Write `.dev/<task-slug>/02-solution-plan.md` yourself. This is YOUR synthesis �
 Structure:
 - Architecture & Design (approach, BC integration points, testability architecture, alternatives considered with brief rationale for rejection)
 - Implementation Plan (object allocation with names/IDs, files to create/modify, implementation sequence, assumptions and risks)
+- **Standards Applied (BCQuality)** — list the BCQuality rules that shaped this design, cited by path, so the user sees which best-practices were applied. Example:
+  ```
+  Standards applied (BCQuality):
+  - performance/use-setloadfields-for-partial-records.md — drives the read strategy
+  - security/classify-every-field-with-dataclassification.md — field classification
+  ```
 
 ### Step 9: Present for Approval
 

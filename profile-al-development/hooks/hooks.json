@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/al-hook-record.sh",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/al-hook-record.js\"",
             "timeout": 10
           }
         ]
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/al-hook-compile.sh",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/al-hook-compile.js\"",
             "timeout": 120,
             "statusMessage": "Compiling AL..."
           }

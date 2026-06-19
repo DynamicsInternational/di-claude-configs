@@ -52,14 +52,32 @@ Classify every user request by complexity, then invoke the matching skill:
 - `/fix` — Quick fix (3 tiers: haiku/sonnet/opus)
 - `/test` — Parallel test development (4 engineers)
 - `/document` — Technical documentation generation
+- `/verify-tests` — Adversarial test verification (mutation sweeps, assertion audit)
+- `/translate` — Localize XLIFF files (fr-FR default; other languages if specified); runs at the end of `/develop`
 
-### Build Skills (invoke with /)
+### Build & Test Skills (invoke with /)
 - `/compile` — Run al-compile with analyzer options
 - `/publish` — Deploy .app to BC server
-- `/run-tests` — Execute AL test codeunits via bc-test
+- `/run-tests` — Execute AL test codeunits (al-runner / bc-test)
+- `/local-bc` — Manage a local BC instance for dev/testing
+- `/al-symbols` — Download dependency symbol packages from Microsoft NuGet feeds
+- `/al-mutate` — Mutation testing to surface test-suite gaps
 
 ### Knowledge Skills (invoke for detailed examples)
 - `build-tools` — Build pipeline quick reference
 - `review-checklists` — Quality checks for plans, code, and tests
+- `bc-source` — Look up BC base app source (tables, pages, codeunits, events)
+- `bcquality-citation` — Ground design/code/review in the BCQuality rule corpus and cite it by path
 
-Rules in `rules/` (auto-loaded — `al-engineering.md` always; `al-architecture.md`, `al-naming.md`, `al-data-access.md`, `al-conventions.md` when an `*.al` file is in context) provide standing AL guardrails without skill invocation.
+### BC source lookup: which tool?
+- **`al-mcp-server`** (AL Dependency MCP) — symbols of the **current project's actual dependencies** (what compiles). Use for events/objects you subscribe to or extend in *this* project.
+- **`bc-source-mcp`** (driven by `/bc-source`) — full base-app **source history** across all BC versions and localizations. Use to read implementations, compare versions, or inspect objects/events not present in the project's symbols.
+- They overlap on "find a base-app event" — prefer `bc-source-mcp` when you need the implementation or a specific version.
+- For the **current project's own** code, navigate with the **native LSP tool** (AL Language Server wired via `.lsp.json` → `al launchlspserver`): go-to-definition, find-references, document symbols, type hierarchy. Prefer it over grep for symbol navigation — it's accurate and token-efficient. (Requires the `al` tool with `launchlspserver`, BC 2026 wave 1+.)
+
+### Best-practice grounding: which source?
+- **`rules/`** (auto-loaded) — terse non-negotiable guardrails. Always present, offline.
+- **`bcquality-mcp`** (via `/bcquality-citation`) — deep, citable rule corpus + good/bad examples; `custom` layer carries DI house standards. Pull at design/generate/check points.
+- **`bc-code-intelligence-mcp`** — open-ended expert consultation (personas, architecture), not rule citation.
+
+Rules in `rules/` (auto-loaded — `al-engineering.md` always; `al-architecture.md`, `al-naming.md`, `al-conventions.md` when an `*.al` file is in context) provide standing AL guardrails without skill invocation. Field classification, captions, and most performance/style rules now live in BCQuality — see `/bcquality-citation`.

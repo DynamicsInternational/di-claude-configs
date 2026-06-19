@@ -47,7 +47,7 @@ For each developer agent:
 3. Assign their specific module and files from the partition.
 4. Provide the path to the solution plan: `.dev/<task-slug>/02-solution-plan.md`
 5. Provide the path to project context: `.dev/project-context.md`
-6. Reference coding standards from the `al-coding-standards` skill directory.
+6. Reference the standing AL rules in `rules/` and the BCQuality corpus via `/bcquality-citation` (GENERATE mode).
 7. Use model: **opus** for code quality.
 
 **Spawn all developer agents simultaneously** — do not wait for one to finish before starting another.
@@ -75,6 +75,7 @@ When all development is complete:
    - Their specific prompt section from `reviewer-prompts.md`
    - The complete list of all AL files to review
    - The solution plan for context
+   - The shared BCQuality CHECK-mode protocol (cite every finding by rule path — see `reviewer-prompts.md` header)
 5. Use model: **sonnet** for all reviewers.
 
 **Spawn all 4 reviewers simultaneously.**
@@ -115,14 +116,18 @@ Write `.dev/<task-slug>/03-code-review.md` with YOUR synthesis (not a copy-paste
 - Reviewers: Security, AL Expert, Performance, Test Coverage
 
 ## Critical Issues Found and Fixed
-| # | Issue | Reviewer | Fix Applied |
-|---|-------|----------|-------------|
-| 1 | ... | ... | ... |
+| # | Issue | Reviewer | Fix Applied | BCQuality Ref |
+|---|-------|----------|-------------|---------------|
+| 1 | ... | ... | ... | <rule path or n/a> |
 
 ## Issues for User Decision
-| # | Issue | Severity | Reviewer | Recommendation |
-|---|-------|----------|----------|----------------|
-| 1 | ... | HIGH/MINOR | ... | ... |
+| # | Issue | Severity | Reviewer | Recommendation | BCQuality Ref |
+|---|-------|----------|----------|----------------|---------------|
+| 1 | ... | HIGH/MINOR | ... | ... | <rule path or n/a> |
+
+## Standards Applied (BCQuality)
+The BCQuality rules that backed this review and implementation, cited by path — so the user sees
+which best-practices were enforced. Flag any `custom`-layer (DI) rule that took precedence.
 
 ## Review Consensus
 - Security: APPROVED / CONCERNS
@@ -140,6 +145,16 @@ Write `.dev/<task-slug>/03-code-review.md` with YOUR synthesis (not a copy-paste
 - If compilation fails, assign fixes to the appropriate developer and re-verify.
 - Do not present to the user until compilation is clean.
 
+## Step 9.5: Translate Localization (end of cycle)
+
+Once compilation is clean and the implementation introduced or changed user-facing text
+(captions, tooltips, labels), invoke `/translate` to localize the project. It defaults to
+**French (`fr-FR`)**; pass other language codes if the user or `.dev/project-context.md` requires
+them. The skill syncs the generated `.g.xlf`, fills untranslated units (preserving placeholders
+and locked states), applies the BC glossary, and writes `.dev/<task-slug>/07-translation.md`.
+
+Skip only when no user-facing text changed (e.g. pure refactor or backend-only logic) — say so explicitly.
+
 ## Step 10: Present to User
 
 Use **AskUserQuestion** to present the results:
@@ -151,6 +166,7 @@ Use **AskUserQuestion** to present the results:
 > **Objects created:** <count>
 > **Review status:** <All clear / N issues for your decision>
 > **Compilation:** <Clean / Issues>
+> **Localization:** <fr-FR translated / skipped (no UI text)>
 >
 > <If issues for decision, list them briefly>
 >

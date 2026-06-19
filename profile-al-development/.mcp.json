@@ -12,22 +12,43 @@
       ],
       "env": {}
     },
+    "bc-source-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "bc-source-mcp"
+      ],
+      "env": {}
+    },
     "bc-code-intelligence-mcp": {
       "type": "stdio",
       "command": "bc-code-intelligence-mcp",
       "args": [],
+      "env": {}
+    },
+    "bcquality-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "bcquality-mcp"
+      ],
       "env": {
-        "BC_CODE_INTEL_CONFIG": "~/claude-configs/profile-al-development/bc-code-intel-config.json"
+        "BCQUALITY_REPO_URL": "https://github.com/DynamicsInternational/BCQuality.git"
       }
+    },
+    "nab-al-tools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@nabsolutions/nab-al-tools-mcp"
+      ],
+      "env": {}
     },
     "alcops": {
       "command": "alcops-mcp"
-    },
-    "bc-telemetry-buddy": {
-      "type": "stdio",
-      "command": "bctb-mcp",
-      "args": ["start", "--config", "/home/stefan/claude-configs/profile-al-development/bctb-config.json"],
-      "env": {}
     }
   }
 }

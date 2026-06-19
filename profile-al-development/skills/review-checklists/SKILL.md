@@ -8,6 +8,11 @@ user-invocable: false
 
 Use these checklists when reviewing output from planning, coding, or testing before presenting results to the user. Every piece of agent output must pass the relevant checklist. If it does not, send it back with specific feedback before the user ever sees it.
 
+These checklists are a **fast index**, not the source of truth. The authoritative best-practice
+corpus is BCQuality (consult and cite via `/bcquality-citation`); the standing `rules/` files are
+the always-on guardrails. When a checklist item needs depth, an example, or a citation, pull it
+from BCQuality and reference the rule path in the deliverable.
+
 ## Review Process
 
 1. **Read the output** carefully and completely.
@@ -36,7 +41,7 @@ Before presenting a solution plan to the user, verify:
 Before presenting code to the user, verify:
 
 - [ ] **Matches the plan** -- implementation follows the agreed solution design; deviations are explained
-- [ ] **AL coding standards met** -- PascalCase, namespaces, affix rules, SetLoadFields, FieldCaption errors, DataClassification, ApplicationArea (see al-coding-standards skill)
+- [ ] **AL coding standards met** -- PascalCase, namespaces, affix rules, SetLoadFields, FieldCaption errors, DataClassification, ApplicationArea (authoritative source: the `rules/` files for standing guardrails and the BCQuality corpus via `/bcquality-citation` for depth + citations)
 - [ ] **Consistent naming** -- identifiers follow the same conventions throughout; no mix of styles
 - [ ] **Compiles cleanly** -- no obvious syntax errors, missing semicolons, undeclared variables, or type mismatches
 - [ ] **Minimal changes** -- only the code necessary to fulfill the requirement; no unrelated refactoring

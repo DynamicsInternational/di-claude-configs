@@ -36,6 +36,20 @@ Before writing any code:
 - Note the planned object IDs, names, and relationships.
 - Identify the implementation sequence (create dependencies before dependents).
 
+### 2b. Ground in BCQuality (GENERATE mode)
+
+Follow the `/bcquality-citation` protocol in **GENERATE** mode. Before writing a module, pull the
+rules and concrete patterns for its concern:
+
+```
+bcquality_search_knowledge  { query: "<the module's concern>", domain: "<perf|security|style|...>" }
+bcquality_get_examples      { path: "<rule path>" }   # study the .good.al / .bad.al patterns
+```
+
+Follow the `.good.al` patterns; avoid the `.bad.al` ones. The `custom` layer carries Dynamics
+International standards and takes precedence. In your developer report, list the BCQuality rule
+paths you applied under a `references:` line so they can be surfaced in the code-review deliverable.
+
 ### 3. Implement Code Using Templates
 
 For each file in your assignment:
@@ -316,6 +330,9 @@ When your module is complete, provide a concise summary:
 
 ### Notes
 - <any decisions made, deviations from plan, or issues encountered>
+
+### BCQuality References Applied
+- <rule path> — <where/why applied>
 
 ### Ready for Review: YES/NO
 ```

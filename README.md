@@ -14,13 +14,16 @@ This setup allows you to:
 
 ```
 claude-configs/
+├── .claude-plugin/
+│   └── marketplace.json       # Marketplace manifest (lists bundled plugins)
 ├── profile-al-development/    # AL (Business Central) development profile
 │   ├── .claude-plugin/
 │   │   └── plugin.json        # Plugin metadata
-│   ├── CLAUDE.md              # AL coding standards and patterns
-│   ├── commands/              # Custom slash commands for AL
-│   ├── skills/                # Model-invoked skills for AL
+│   ├── CLAUDE.md              # Lead-as-Manager profile instructions
+│   ├── skills/                # Model-invoked skills for AL (/-prefixed)
 │   ├── agents/                # Custom subagents for AL
+│   ├── rules/                 # Auto-loaded AL guardrails
+│   ├── hooks/                 # Auto-compile hooks
 │   └── .mcp.json              # AL MCP server configuration
 ├── .gitignore
 └── README.md (this file)
@@ -28,13 +31,11 @@ claude-configs/
 
 ## Quick Start Configuration
 
-Before using these plugins:
+The plugins work out of the box. The AL profile's `.mcp.json` bundles seven MCP servers
+(BC Code Intelligence, Microsoft Docs, AL Dependency, BC Source, BCQuality, NAB AL Tools, ALCOPS);
+any extra servers you need go in your own user or project settings, not in the plugin.
 
-1. **Update external tool paths (optional):**
-   - In `profile-al-development/.mcp.json`, update the path to the Serena tool if you're using it
-   - Or remove the serena MCP server configuration if not applicable
-
-All other paths use `~` which expands to your home directory automatically.
+All paths use `~`, which expands to your home directory automatically.
 
 ## Setup Instructions
 
@@ -151,7 +152,7 @@ To create a new plugin profile:
 1. **Create plugin directory:**
    ```bash
    cd ~/claude-configs
-   mkdir -p profile-name/{.claude-plugin,commands,skills,agents}
+   mkdir -p profile-name/{.claude-plugin,skills,agents,rules}
    ```
 
 2. **Create plugin.json:**
@@ -168,11 +169,13 @@ To create a new plugin profile:
 
 3. **Add configuration files:**
    - `CLAUDE.md` - Memory/instructions
-   - `commands/*.md` - Custom slash commands
-   - `skills/*/SKILL.md` - Agent skills
-   - `.mcp.json` - MCP server configuration
+   - `skills/<skill-name>/SKILL.md` - Model-invoked skills
+   - `agents/*.md` - Custom subagents
+   - `rules/*.md` - Auto-loaded guardrails (optional)
+   - `.mcp.json` - MCP server configuration (optional)
 
-4. **Document in README:**
+4. **Register and document:**
+   - Add the plugin to `.claude-plugin/marketplace.json`
    - Create `profile-name/README.md`
    - Update this main README
 

@@ -73,6 +73,7 @@ Classify every user request by complexity, then invoke the matching skill:
 - **`al-mcp-server`** (AL Dependency MCP) — symbols of the **current project's actual dependencies** (what compiles). Use for events/objects you subscribe to or extend in *this* project.
 - **`bc-source-mcp`** (driven by `/bc-source`) — full base-app **source history** across all BC versions and localizations. Use to read implementations, compare versions, or inspect objects/events not present in the project's symbols.
 - They overlap on "find a base-app event" — prefer `bc-source-mcp` when you need the implementation or a specific version.
+- For the **current project's own** code, navigate with the **native LSP tool** (AL Language Server wired via `.lsp.json` → `al launchlspserver`): go-to-definition, find-references, document symbols, type hierarchy. Prefer it over grep for symbol navigation — it's accurate and token-efficient. (Requires the `al` tool with `launchlspserver`, BC 2026 wave 1+.)
 
 ### Best-practice grounding: which source?
 - **`rules/`** (auto-loaded) — terse non-negotiable guardrails. Always present, offline.

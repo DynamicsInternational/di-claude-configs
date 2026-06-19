@@ -1,0 +1,10 @@
+{
+  "al": {
+    "command": "al",
+    "args": ["launchlspserver"],
+    "extensionToLanguage": {
+      ".al": "al"
+    },
+    "startupTimeout": 300000
+  }
+}

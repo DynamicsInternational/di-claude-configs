@@ -156,6 +156,26 @@ This profile configures seven MCP servers in `.mcp.json`:
 you only need what the current project actually compiles against. Other servers (e.g. NAB AL
 Tools, BCQuality) may be supplied by your user or project settings.
 
+## AL Language Server (LSP)
+
+`.lsp.json` wires Microsoft's official AL Language Server into Claude Code's **native LSP tool**
+via `al launchlspserver` (stdio). This gives semantic, cross-project code intelligence —
+go-to-definition, find-references, document symbols, rename, type hierarchy, and live diagnostics —
+far more reliable than text/grep search and more token-efficient (symbol-level reads).
+
+**Prerequisites:**
+- The `al` tool must be on `PATH` with the `launchlspserver` command — introduced in **BC 2026
+  release wave 1+**. Install/update it with:
+  ```bash
+  dotnet tool update --global Microsoft.Dynamics.BusinessCentral.Development.Tools
+  ```
+- The dependency symbol cache (`.app` packages) must be reachable for full intelligence — the
+  server auto-discovers `al.packageCachePath` from the project's `.vscode/settings.json`. Run
+  `/al-symbols` to download missing symbols.
+
+This replaces any need for a third-party semantic-code MCP (e.g. Serena): the AL LSP is first-party
+and purpose-built for autonomous agents.
+
 ## Directory Structure
 
 ```
@@ -163,6 +183,7 @@ profile-al-development/
 ├── .claude-plugin/
 │   └── plugin.json           # Plugin metadata
 ├── .mcp.json                 # MCP server configuration (7 servers)
+├── .lsp.json                 # Native AL Language Server config (al launchlspserver)
 ├── CLAUDE.md                 # Lead-as-Manager profile instructions
 ├── README.md                 # This file
 ├── agents/

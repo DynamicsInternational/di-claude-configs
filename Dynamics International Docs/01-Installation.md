@@ -332,10 +332,24 @@ Dépôt :
 
 <https://github.com/ALCops/mcp-server>
 
-Installation :
+Installation (commande standard) :
 
 ```powershell
 dotnet tool install -g ALCops.Mcp
+```
+
+⚠️ **ALCops est pour le moment en pré-release (alpha)** : il n'existe encore aucune version stable sur nuget.org. La commande standard ci-dessus échoue donc avec « ALCops.Mcp est introuvable » (`dotnet` n'installe que les versions stables par défaut). Tant qu'une version stable n'est pas publiée, ajoutez le flag `--prerelease` :
+
+```powershell
+dotnet tool install -g ALCops.Mcp --prerelease
+```
+
+> Dès qu'une version stable d'ALCops sera disponible, la commande standard (sans `--prerelease`) suffira.
+
+Pour épingler une version précise :
+
+```powershell
+dotnet tool install -g ALCops.Mcp --version 0.1.0-alpha.8
 ```
 
 Prérequis :

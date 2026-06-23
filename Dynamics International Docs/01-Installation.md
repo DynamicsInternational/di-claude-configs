@@ -1,215 +1,617 @@
 # 01 — Installation
 
-Ce guide installe **tout ce qu'il faut** pour utiliser le plugin. Suivez les sections dans l'ordre.
-Comptez 30 à 60 minutes la première fois.
+Ce guide installe tout le nécessaire pour utiliser le plugin DI avec Claude Code sur un projet Business Central AL.
 
-> 💡 Sous Windows, ouvrez **PowerShell** pour les commandes `dotnet`/`npm`, et **Git Bash** pour
-> les scripts `.sh`. Les commandes ci-dessous précisent quand utiliser l'un ou l'autre.
+Temps estimé :
 
----
+- Première installation : 30 à 60 minutes
+- Installation sur un poste déjà configuré : 10 à 15 minutes
 
-## 1. Prérequis (à installer une fois)
-
-| Outil | Pourquoi | Vérifier avec |
-|-------|----------|---------------|
-| **Git** | Cloner le dépôt du plugin et le code | `git --version` |
-| **Node.js 20+** | Claude Code + plusieurs serveurs MCP (lancés via `npx`) | `node --version` |
-| **.NET SDK 8, 9 ou 10** | Outils AL (`al`, `al-runner`, `al-mutate`) | `dotnet --version` |
-| **Extension AL pour VS Code** (`ms-dynamics-smb.al`) | Compilation AL + symboles + serveur de langage | visible dans VS Code |
-
-- Node.js : <https://nodejs.org> (version LTS).
-- .NET SDK : <https://aka.ms/dotnet/download>.
-- Extension AL : dans VS Code, onglet Extensions, chercher « AL Language ».
+Suivez les sections **dans l'ordre**.
 
 ---
 
-## 2. Installer Claude Code
+# Avant de commencer
 
-Suivez la documentation officielle : <https://docs.claude.com/claude-code>.
-Méthode courante (nécessite Node.js) :
+## Où exécuter les commandes ?
+
+Toutes les commandes de ce guide doivent être exécutées dans **PowerShell**. Deux options équivalentes :
+
+- le terminal PowerShell **intégré à VS Code** (pratique : déjà positionné dans le dossier du projet) ;
+- une **fenêtre PowerShell externe** (menu Démarrer → « PowerShell » ou « Windows PowerShell »).
+
+Ouvrir le terminal intégré dans VS Code :
+
+```text
+VS Code
+└── Terminal
+    └── Nouveau terminal
+```
+
+ou :
+
+```text
+Ctrl + Shift + `
+```
+
+Ne pas exécuter ces commandes :
+
+- dans Claude Code
+- dans la fenêtre de chat Claude
+- dans Git Bash (sauf indication contraire)
+- dans l'invite de commandes Windows (cmd)
+
+---
+
+# 1. Prérequis système
+
+## Outils requis
+
+| Outil | Pourquoi |
+|---------|----------|
+| Git | Gestion du code source |
+| Node.js 22 LTS | Claude Code et serveurs MCP |
+| .NET SDK 8, 9 ou 10 | Outils Business Central |
+| VS Code | Développement AL |
+| Extension AL Language | Compilation et symboles AL |
+
+---
+
+## Installer Git
+
+Téléchargement :
+
+<https://git-scm.com/downloads>
+
+Vérification :
+
+```powershell
+git --version
+```
+
+Résultat attendu :
+
+```text
+git version 2.x.x
+```
+
+---
+
+## Installer Node.js
+
+Recommandation :
+
+```text
+Node.js 22 LTS
+```
+
+Téléchargement :
+
+<https://nodejs.org>
+
+⚠️ Éviter Node.js 24+.
+
+Certaines dépendances MCP (notamment better-sqlite3) peuvent nécessiter une compilation native et provoquer des erreurs.
+
+Vérification :
+
+```powershell
+node --version
+npm --version
+```
+
+Résultat attendu :
+
+```text
+v22.x.x
+10.x ou supérieur
+```
+
+---
+
+## Installer .NET SDK
+
+Téléchargement :
+
+<https://aka.ms/dotnet/download>
+
+Vérification :
+
+```powershell
+dotnet --version
+```
+
+Résultat attendu :
+
+```text
+8.x
+9.x
+ou
+10.x
+```
+
+---
+
+## Installer VS Code et l'extension AL
+
+VS Code : <https://code.visualstudio.com>
+
+Puis, dans VS Code :
+
+```text
+Extensions
+└── Rechercher
+    └── AL Language
+```
+
+Éditeur :
+
+```text
+Microsoft
+(ms-dynamics-smb.al)
+```
+
+---
+
+## Vérification complète des prérequis
+
+Dans PowerShell :
+
+```powershell
+git --version
+node --version
+npm --version
+dotnet --version
+```
+
+Tous les outils doivent répondre sans erreur avant de continuer.
+
+---
+
+# 2. Configurer la source NuGet
+
+À faire **avant** d'installer les outils .NET (section 6), sinon `dotnet tool install` échoue.
+
+Vérifier :
+
+```powershell
+dotnet nuget list source
+```
+
+Vous devez voir :
+
+```text
+nuget.org
+https://api.nuget.org/v3/index.json
+```
+
+Si ce n'est pas le cas, ajouter la source :
+
+```powershell
+dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+```
+
+---
+
+# 3. Installer Claude Code
+
+Documentation officielle :
+
+<https://docs.claude.com/claude-code>
+
+Dans PowerShell :
 
 ```powershell
 npm install -g @anthropic-ai/claude-code
 ```
 
-Vérifiez :
+Vérification :
 
 ```powershell
 claude --version
 ```
 
+Résultat attendu :
+
+```text
+Claude Code x.x.x
+```
+
 ---
 
-## 3. Ajouter le marketplace du plugin
+# 4. Installer le plugin DI
 
-Le plugin est publié sur GitHub : **`DynamicsInternational/di-claude-configs`**. Deux méthodes.
+## Ajouter le marketplace
 
-### Méthode A — directement depuis GitHub (recommandée)
+Le plugin est publié sur GitHub :
 
-Pas besoin de cloner quoi que ce soit : Claude Code récupère le dépôt tout seul.
+```text
+DynamicsInternational/di-claude-configs
+```
+
+Installation :
 
 ```powershell
 claude plugin marketplace add DynamicsInternational/di-claude-configs
 ```
 
-(équivalent depuis l'intérieur de Claude Code : `/plugin marketplace add DynamicsInternational/di-claude-configs`)
-
-> Pour épingler une branche : `… add DynamicsInternational/di-claude-configs@main`.
-> **Dépôt privé ?** Claude Code réutilise vos identifiants Git. Pour les mises à jour automatiques,
-> définissez `GITHUB_TOKEN` (ou `GH_TOKEN`) dans votre environnement.
-
-**Mettre à jour** plus tard (les mises à jour ne sont pas automatiques par défaut) :
+Vérification :
 
 ```powershell
-claude plugin marketplace update di-claude-configs
+claude plugin marketplace list
 ```
 
-### Méthode B — clone local (pour les mainteneurs ou en hors-ligne)
+Résultat attendu :
 
-```powershell
-cd ~
-git clone https://github.com/DynamicsInternational/di-claude-configs.git
+```text
+claude-configs
+Source: GitHub
 ```
 
-Vous pointerez alors le marketplace sur ce dossier (voir la variante en §4).
+> Mise à jour ultérieure (les mises à jour ne sont pas automatiques) :
+> `claude plugin marketplace update di-claude-configs`
 
 ---
 
-## 4. Activer le plugin dans un projet AL
+## Activer le plugin
 
-Une fois le marketplace ajouté (§3), activez le plugin. Le plus simple, dans Claude Code :
+Ouvrir votre projet AL dans VS Code, puis dans le terminal :
 
+```powershell
+claude
 ```
+
+Dans Claude :
+
+```text
 /plugin
 ```
 
-puis activez **profile-al-development**. Sinon, déclarez-le dans le `.claude/settings.json` du projet :
+Activer :
 
-```json
-{
-  "extraKnownMarketplaces": {
-    "di-configs": {
-      "source": {
-        "source": "github",
-        "repo": "DynamicsInternational/di-claude-configs"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "profile-al-development@di-configs": true
-  }
-}
+```text
+profile-al-development
 ```
 
-> **Variante clone local** (méthode B) : remplacez le bloc `source` par
-> `{ "source": "directory", "path": "~/di-claude-configs" }`.
-
-Relancez Claude Code dans le projet ; tapez `/` pour voir apparaître les commandes du plugin
-(`/plan`, `/develop`, etc.). Sinon, voir [Dépannage](06-Depannage-FAQ.md).
+Quitter puis relancer Claude.
 
 ---
 
-## 5. Les serveurs MCP (sources de connaissance)
+# 5. Serveurs MCP
 
-Le plugin déclare **7 serveurs MCP**. La plupart se lancent **automatiquement** via `npx`
-(aucune installation manuelle, juste Node.js) :
+Le rôle de chaque serveur est détaillé dans [05 - MCP et outils](05-MCP-et-outils.md).
 
-| Serveur | Installation | À quoi ça sert ([détails](05-MCP-et-outils.md)) |
-|---------|--------------|--------------------------------------------------|
-| `microsoft_docs_mcp` | aucune (service web) | Documentation Microsoft officielle |
-| `al-mcp-server` | auto (`npx`) | Navigation des dépendances du projet |
-| `bc-source-mcp` | auto (`npx`) | Code source de la base app BC, toutes versions |
-| `bcquality-mcp` | auto (`npx`) | Règles de qualité AL (fork DI) |
-| `nab-al-tools` | auto (`npx`) | Traduction XLIFF |
-| `bc-code-intelligence-mcp` | **install manuelle** (voir ci-dessous) | Consultation d'experts BC |
-| `alcops` | **install manuelle** (voir ci-dessous) | Analyse qualité de code AL |
+## MCP automatiques
 
-Pour les deux serveurs à installer manuellement (commande globale attendue sur le `PATH`) :
+Ces serveurs sont lancés automatiquement via `npx` (aucune action nécessaire) :
+
+```text
+microsoft_docs_mcp
+al-mcp-server
+bc-source-mcp
+bcquality-mcp
+nab-al-tools
+```
+
+---
+
+## MCP à installer manuellement
+
+Un seul serveur nécessite une installation globale :
 
 ```powershell
 npm install -g bc-code-intelligence-mcp
-npm install -g alcops-mcp
 ```
 
-> ⚠️ Si le nom exact d'un de ces deux packages a changé, vérifiez auprès de l'équipe DI.
-> Tant qu'ils ne sont pas installés, seuls ces deux serveurs seront indisponibles — le reste fonctionne.
+Vérification :
 
-Aucune clé ni configuration supplémentaire n'est requise : le serveur BCQuality pointe déjà sur le
-fork DI (`DynamicsInternational/BCQuality`) via le plugin.
+```powershell
+bc-code-intelligence-mcp .
+```
+
+Vous devez voir :
+
+```text
+MCP transport connected
+Server ready
+```
+
+Puis interrompre avec :
+
+```text
+Ctrl+C
+```
 
 ---
 
-## 6. Les outils CLI de build et de test
+## ALCops (analyse qualité de code AL)
 
-Ces outils (de **Stefan Maron**) servent à compiler et tester l'AL en ligne de commande.
+⚠️ Contrairement à `bc-code-intelligence-mcp`, ALCops n'est **pas** un package npm : c'est un **outil .NET global** (le binaire `alcops-mcp` attendu par le plugin).
 
-### al-compile (compilation)
+Dépôt :
 
-Dépôt : <https://github.com/StefanMaron/al-smart-compile>
+<https://github.com/ALCops/mcp-server>
+
+Installation :
 
 ```powershell
-git clone https://github.com/StefanMaron/al-smart-compile
-cd al-smart-compile
-.\install.ps1        # Windows (PowerShell). Sous Linux/macOS/Git Bash : ./install.sh
+dotnet tool install -g ALCops.Mcp
 ```
 
-Prérequis : extension AL installée + **symboles téléchargés** (dans VS Code : `AL: Download Symbols`,
-ou via le skill `/al-symbols`). `jq` recommandé pour l'analyse des logs.
+Prérequis :
 
-### al-runner (tests rapides, sans serveur BC)
+- .NET 10 (SDK ou Runtime)
+- Extension AL Language v17.0 ou supérieure
 
-Dépôt : <https://github.com/StefanMaron/BusinessCentral.AL.Runner>
+> Si la commande `alcops-mcp` n'est pas reconnue après installation, ajoutez `.dotnet\tools` au PATH (voir l'encadré en tête de la section 6).
+
+L'absence d'ALCops n'empêche pas l'utilisation du plugin — il peut être désactivé s'il est en erreur.
+
+---
+
+# 6. Outils AL en ligne de commande
+
+> ℹ️ Les outils installés via `dotnet tool install` arrivent dans `%USERPROFILE%\.dotnet\tools`.
+> Si une commande n'est pas reconnue après installation, ajoutez ce dossier au PATH :
+> ```powershell
+> $env:Path += ";$env:USERPROFILE\.dotnet\tools"
+> ```
+
+## al-compile (compilation)
+
+Outil de compilation AL en ligne de commande (de Stefan Maron). Requis par le skill `/compile`.
+
+Dépôt :
+
+<https://github.com/StefanMaron/al-smart-compile>
+
+Installation :
+
+```powershell
+cd ~
+git clone https://github.com/StefanMaron/al-smart-compile
+cd al-smart-compile
+.\install.ps1
+```
+
+> Sous Linux / macOS / Git Bash : `./install.sh`
+
+Prérequis : extension AL installée + symboles téléchargés (dans VS Code : `AL: Download Symbols`, ou via le skill `/al-symbols`). `jq` est recommandé pour l'analyse des logs.
+
+---
+
+## al-runner (tests rapides)
+
+Tests unitaires ultra rapides, sans serveur BC.
+
+Installation :
 
 ```powershell
 dotnet tool install --global MSDyn365BC.AL.Runner
 ```
 
-### al-mutate (qualité des tests)
+Vérification :
+
+```powershell
+al-runner --help
+```
+
+---
+
+## al-mutate (mutation testing)
+
+Mesure la qualité des tests.
+
+Installation :
 
 ```powershell
 dotnet tool install --global MSDyn365BC.AL.Mutate
 ```
 
-### bc-publish / bc-test (tests d'intégration sur un vrai serveur BC — optionnel)
+Vérification :
 
-> 🚧 **À confirmer par DI** : la source d'installation de `bc-publish` et `bc-test` n'est pas encore
-> documentée ici. Ces deux outils ne sont nécessaires que pour les **tests d'intégration** contre une
-> instance BC réelle (skills `/publish` et `/run-tests` en mode intégration). Le développement, la
-> compilation et les tests rapides (`al-runner`) fonctionnent **sans** eux.
-> Ils se configurent ensuite via un fichier `.bcconfig.json` (`bc-publish --init`).
+```powershell
+al-mutate --help
+```
 
 ---
 
-## 7. Le serveur de langage AL (LSP) — recommandé
+## Serveur de langage AL (LSP)
 
-Le plugin fournit `.lsp.json`, qui branche le **serveur de langage AL officiel** sur l'outil de
-navigation de code de Claude Code (aller à la définition, références, hiérarchie de types…).
+Branche le serveur de langage AL officiel sur la navigation de code de Claude Code (aller à la définition, références, hiérarchie de types).
 
-Il faut l'outil `al` de Microsoft, **version BC 2026 wave 1 ou ultérieure** :
+Installation :
 
 ```powershell
 dotnet tool install --global Microsoft.Dynamics.BusinessCentral.Development.Tools
-# (ou, si déjà installé)  dotnet tool update --global Microsoft.Dynamics.BusinessCentral.Development.Tools
 ```
 
-Vérifiez que la commande LSP existe :
+Vérification :
 
 ```powershell
-al --help        # doit lister « launchlspserver »
+al --help
 ```
 
-Si `launchlspserver` n'apparaît pas, votre `al` est trop ancien : mettez-le à jour avec la commande
-ci-dessus.
+Résultat attendu :
+
+```text
+launchmcpserver
+```
+
+ou :
+
+```text
+launchlspserver
+```
+
+selon la version installée. Si aucune de ces commandes n'apparaît, votre outil `al` est trop ancien : mettez-le à jour avec `dotnet tool update --global Microsoft.Dynamics.BusinessCentral.Development.Tools`.
 
 ---
 
-## 8. Vérification finale
+## bc-publish / bc-test (intégration — optionnel)
 
-Dans un projet AL avec le plugin activé, lancez `claude` puis :
+Tests d'intégration contre une vraie instance BC (skills `/publish` et `/run-tests` en mode intégration). Ces outils ne sont **pas** nécessaires pour le développement, la compilation et les tests rapides (`al-runner`).
 
-- Tapez `/` → vous devez voir `/plan`, `/develop`, `/fix`, etc.
-- Lancez `/compile` → la compilation doit démarrer (`al-compile`).
-- En cas de souci, voir [Dépannage / FAQ](06-Depannage-FAQ.md).
+> 🚧 La source d'installation de `bc-publish` / `bc-test` est à confirmer auprès de l'équipe DI. Ils se configurent ensuite via un fichier `.bcconfig.json` (`bc-publish --init`).
 
-Vous êtes prêt → [02 - Démarrage rapide](02-Demarrage-rapide.md).
-</content>
+---
+
+# 7. Validation finale
+
+## Vérifier les serveurs MCP
+
+Dans votre projet :
+
+```powershell
+claude
+```
+
+Puis :
+
+```text
+/mcp
+```
+
+Les serveurs suivants doivent être connectés :
+
+```text
+al-mcp-server
+bcquality-mcp
+microsoft_docs_mcp
+nab-al-tools
+bc-source-mcp
+bc-code-intelligence-mcp
+alcops
+```
+
+`alcops` n'apparaît que si l'outil .NET `ALCops.Mcp` est installé (section 5). Il peut être désactivé s'il est en erreur — le plugin reste utilisable sans lui.
+
+---
+
+## Vérifier le plugin
+
+Tester :
+
+```text
+/compile
+```
+
+La compilation doit démarrer.
+
+Puis :
+
+```text
+Analyse complètement ce projet AL.
+```
+
+Claude doit être capable d'identifier :
+
+- les dépendances
+- les objets AL
+- les flux métier
+- les zones techniques à risque
+
+---
+
+# 8. Dépannage Windows
+
+Pour les problèmes non couverts ici, voir [06 - Dépannage / FAQ](06-Depannage-FAQ.md).
+
+## Node installé mais introuvable
+
+Vérifier :
+
+```powershell
+Test-Path "C:\Program Files\nodejs\node.exe"
+```
+
+Puis :
+
+```powershell
+$env:Path += ";C:\Program Files\nodejs;$env:APPDATA\npm"
+```
+
+Tester :
+
+```powershell
+node --version
+npm --version
+```
+
+---
+
+## Outils .NET installés mais introuvables
+
+Ajouter `.dotnet\tools` au PATH :
+
+```powershell
+$env:Path += ";$env:USERPROFILE\.dotnet\tools"
+```
+
+Puis :
+
+```powershell
+al --help
+```
+
+---
+
+## Erreur Python lors de l'installation MCP
+
+Installer Python :
+
+```powershell
+winget install Python.Python.3.12
+```
+
+Vérifier :
+
+```powershell
+python --version
+```
+
+Résultat attendu :
+
+```text
+Python 3.12.x
+```
+
+---
+
+## Erreur « No NuGet sources are defined or enabled »
+
+Voir la section 2 — Configurer la source NuGet :
+
+```powershell
+dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+```
+
+---
+
+# Première utilisation recommandée
+
+Essayez successivement :
+
+```text
+Analyse complètement ce projet AL.
+```
+
+```text
+Liste les dépendances et les objets les plus importants.
+```
+
+```text
+Explique-moi l'architecture du projet comme si j'étais un nouveau développeur.
+```
+
+```text
+Quels objets seraient impactés si je modifie cette table ?
+```
+
+```text
+Analyse les 20 derniers commits Git et résume les évolutions fonctionnelles.
+```
+
+Si Claude répond correctement à ces questions, votre environnement est pleinement opérationnel.
+
+Vous êtes prêt → [02 - Démarrage rapide](02-Demarrage-rapide.md)

@@ -30,8 +30,8 @@ claude-configs/
 │   ├── CLAUDE.md                    # Lead-as-Manager profile instructions
 │   ├── agents/                      # Standalone agents
 │   │   └── al-repo-summarizer.md    # (workflow specialists are spawned by skills)
-│   ├── skills/                      # 19 model-invoked skills (/-prefixed)
-│   │   ├── init-context/  interview/  plan/  develop/  fix/  test/  document/
+│   ├── skills/                      # model-invoked skills (/-prefixed)
+│   │   ├── init-context/  interview/  fit-gap/  plan/  develop/  fix/  test/  document/
 │   │   ├── compile/  publish/  run-tests/  local-bc/  al-symbols/  al-mutate/
 │   │   └── build-tools/  review-checklists/  bc-source/  verify-tests/
 │   ├── rules/                       # 5 auto-loaded AL guardrail files

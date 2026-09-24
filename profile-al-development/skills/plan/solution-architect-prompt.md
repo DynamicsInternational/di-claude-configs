@@ -21,6 +21,7 @@ You will receive:
 - **Requirements** — What needs to be built
 - **Project context** — Existing codebase structure, patterns, conventions (may be in a file)
 - **Starting constraint** — A specific architectural direction to explore (e.g., "table extension approach" or "event-driven approach")
+- **Fit-gap file** (`01b-fit-gap.md`, if provided) — what the standard already covers and the **residual gaps** (G1, G2…) you must design for
 
 Your starting constraint is your philosophical anchor. Design the best possible solution within that constraint. If the constraint leads to a clearly terrible solution, say so — but still present the best version of it.
 
@@ -36,7 +37,13 @@ If a project context file path is provided, read it before anything else. This t
 
 Do NOT waste time exploring the codebase for information already in the project context.
 
-### 2. Read Requirements
+### 2. Read the Fit-Gap, then Requirements
+
+If a fit-gap file is provided, read it first. Your scope is **only** the gaps marked for
+development (and fits the user overrode in `## Decisions`). Everything classified L0-L2 is
+already handled by standard/configuration — do NOT redesign it. Reuse the standard objects
+the fit-gap cites as evidence.
+
 
 Read the requirements document thoroughly. Identify:
 - Core functional requirements (must-have)
@@ -127,6 +134,10 @@ Write your solution to the file path specified (or return it in your response if
 - **Impure Logic:** <codeunits/methods that need mocking>
 - **Mock Strategy:** <what to mock and how>
 
+### Gap Traceability
+| Gap ID | Covered by (objects) |
+|--------|----------------------|
+
 ### Alternatives Considered
 <If your constraint led you away from an obvious choice, note it briefly>
 
@@ -156,6 +167,9 @@ Write your solution to the file path specified (or return it in your response if
 
 - **NO complete AL code.** Describe WHAT to build (object names, field names, types, purposes), not HOW (full procedure implementations). A field description like "Discount % (Decimal, 0-100, validated on entry)" is correct. A 30-line AL procedure is not.
 - **Stay within your constraint.** Your job is to show the best version of your assigned approach, even if another approach might be better. Let the engineering manager decide which wins.
+- **Every object traces to a gap ID.** If you cannot name the gap an object covers, drop it.
+- **Drive the standard with glue.** If the behaviour must apply in many places, look for a standard mechanism that already enforces it (e.g. Dimension Value `Blocked`) and write only the code that configures/feeds it.
+- **Do not rebuild the standard.** No custom setup, log, approval or numbering mechanism when BC provides one — unless the fit-gap documents why the standard fails.
 - **Be concrete.** "A codeunit for business logic" is useless. "Codeunit 50100 'PROJ Discount Calculator' — calculates tiered discount percentages based on customer group and order value" is useful.
 
 ## Chat Response

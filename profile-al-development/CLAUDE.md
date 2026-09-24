@@ -42,11 +42,14 @@ Classify every user request by complexity, then invoke the matching skill:
 
 **User can override:** `/fix` always uses fast path. `/plan` forces planning. Suggest if the path seems wrong.
 
+**Standard first:** `/plan` always runs the `/fit-gap` gate before design — the request is challenged against BC standard, configuration, no-code tools and installed apps, and only the residual gap is designed. The goal is to **reduce** specific development (not forbid it) so the client's solution stays maintainable and upgrade-safe. Skipped for bug fixes, refactoring, performance and compliance work.
+
 ## Available Skills
 
 ### Workflow Skills (invoke with /)
 - `/init-context` — One-time project context setup
 - `/interview` — Deep requirements gathering (40+ questions)
+- `/fit-gap` — Standard-first challenge: maps the request to BC standard/config/no-code before any design (auto-run by `/plan`)
 - `/plan` — Competitive solution design (2-3 architects debate)
 - `/develop` — Parallel implementation + 4-specialist review
 - `/fix` — Quick fix (3 tiers: haiku/sonnet/opus)

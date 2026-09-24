@@ -1,6 +1,6 @@
 # AL Development Profile — Lead-as-Manager
 
-**Version:** 5.2.0
+**Version:** 5.3.0
 
 Claude Code profile for Microsoft Dynamics 365 Business Central AL development. The main session acts as an **engineering manager** that orchestrates specialist teammate agents — it never writes code itself. Work is parallelized across agent teams, documented to files, and gated by user approval.
 
@@ -63,6 +63,8 @@ Classify each request by complexity, then invoke the matching skill:
 | MEDIUM | 4-8 files, design decisions | `/plan` → `/develop` | 20-40 min |
 | COMPLEX | 9+ files, new architecture | `/interview` → `/plan` → `/develop` → `/test` | 45-90+ min |
 
+**Standard first:** `/plan` always runs the `/fit-gap` gate before design — the request is challenged against BC standard, configuration, no-code tools and installed apps, and only the residual gap is designed. The goal is to **reduce** specific development (not forbid it) so the client's solution stays maintainable and upgrade-safe. Skipped for bug fixes, refactoring, performance and compliance work.
+
 ## Available Skills
 
 Invoke with `/`. Skills marked *(reference)* are auto-loaded knowledge rather than runnable workflows.
@@ -70,6 +72,7 @@ Invoke with `/`. Skills marked *(reference)* are auto-loaded knowledge rather th
 ### Workflow Skills
 - `/init-context` — One-time project context setup
 - `/interview` — Deep requirements gathering (structured interview specialist)
+- `/fit-gap` — Standard-first fit-gap: challenges the request against BC standard, configuration, no-code tools and installed apps (solution ladder L0-L4); only the residual gap goes to design. Auto-run by `/plan`
 - `/plan` — Competitive solution design (2-3 architects debate, lead synthesizes)
 - `/develop` — Parallel implementation + 4-specialist code review
 - `/fix` — Lightweight 3-tier bug fix (no approval gates)
@@ -188,7 +191,7 @@ profile-al-development/
 ├── README.md                 # This file
 ├── agents/
 │   └── al-repo-summarizer.md # Standalone repo-summary agent
-├── skills/                   # 19 model-invoked skills (see above)
+├── skills/                   # model-invoked skills (see above)
 ├── rules/                    # 4 auto-loaded AL rule files
 ├── hooks/                    # hooks.json + al-hook-record.js + al-hook-compile.js
 ├── .dev-templates/

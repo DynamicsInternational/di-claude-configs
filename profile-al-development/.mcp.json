@@ -48,7 +48,17 @@
       "env": {}
     },
     "alcops": {
-      "command": "alcops-mcp"
+      "type": "stdio",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${CLAUDE_PLUGIN_ROOT}/scripts/start-alcops-mcp.ps1"
+      ],
+      "env": {}
     }
   }
 }

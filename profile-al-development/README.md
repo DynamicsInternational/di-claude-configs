@@ -1,6 +1,6 @@
 # AL Development Profile — Lead-as-Manager
 
-**Version:** 5.3.0
+**Version:** 5.3.1
 
 Claude Code profile for Microsoft Dynamics 365 Business Central AL development. The main session acts as an **engineering manager** that orchestrates specialist teammate agents — it never writes code itself. Work is parallelized across agent teams, documented to files, and gated by user approval.
 
@@ -152,7 +152,7 @@ This profile configures seven MCP servers in `.mcp.json`:
 | `bc-source-mcp` | stdio (npx) | Full base-app **source history** across BC versions/localizations (drives `/bc-source`) |
 | `bcquality-mcp` | stdio (npx) | BCQuality best-practice rule corpus (microsoft/community/**custom** layers; drives `/bcquality-citation`). Set to the DI fork via `BCQUALITY_REPO_URL` |
 | `nab-al-tools` | stdio (npx) | XLIFF localization tooling (drives `/translate`) |
-| `alcops` | stdio | AL code-quality analysis and fixes |
+| `alcops` | stdio | AL code-quality analysis and fixes (via `scripts/start-alcops-mcp.ps1`, which resolves `BCDEVELOPMENTTOOLSPATH` at each start) |
 
 `al-mcp-server` vs `bc-source-mcp` overlap on base-app event/object discovery: prefer
 `bc-source-mcp` when you need the implementation or a specific version, `al-mcp-server` when

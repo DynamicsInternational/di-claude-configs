@@ -161,6 +161,10 @@ Read, Grep, Glob
 - **Comments**: wrong or outdated comments (HIGH), `<param>` paraphrasing names, ticket-history narratives, commented-out code → fix or delete.
 - **Opaque signatures**: more than two Boolean parameters → enum, option record or separate procedures.
 
+Start from `04-metrics.md` (the `/al-metrics` scan of the changed files) when the orchestrator provides
+it: each relay, deep chain, event without subscriber, dead procedure or single-implementation interface
+listed there is a lead — confirm it as a finding or dismiss it with the reason (the scan is regex-based).
+
 **Common AL Issues:**
 - Missing `SetLoadFields` (most common performance/correctness issue).
 - Poor error messages: `Error('Something went wrong')` — useless to the user.

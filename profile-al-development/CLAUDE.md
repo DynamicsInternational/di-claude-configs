@@ -65,6 +65,7 @@ Classify every user request by complexity, then invoke the matching skill:
 - `/local-bc` — Manage a local BC instance for dev/testing
 - `/al-symbols` — Download dependency symbol packages from Microsoft NuGet feeds
 - `/al-mutate` — Mutation testing with LethAL to surface test-suite gaps
+- `/al-metrics` — Structure metrics (call depth, relays, unused events, dead code, comment noise); run at the end of `/develop`
 
 ### Knowledge Skills (invoke for detailed examples)
 - `build-tools` — Build pipeline quick reference

@@ -1,6 +1,6 @@
 # 04 — Référence des skills
 
-Les **skills** sont les commandes `/…` du plugin. En voici les 19, regroupées par usage.
+Les **skills** sont les commandes `/…` du plugin. En voici les 20, regroupées par usage.
 Tapez `/` dans Claude Code pour les voir, ou invoquez-les directement.
 
 > Une **skill** = une capacité que le manager peut lancer (voir [Glossaire](07-Glossaire.md)).
@@ -33,6 +33,7 @@ Tapez `/` dans Claude Code pour les voir, ou invoquez-les directement.
 | `/local-bc` | Gère une instance BC locale de dev/test | — |
 | `/al-symbols` | Télécharge les packages de symboles (`.app`) des dépendances | Non |
 | `/al-mutate` | Test de mutation (LethAL) : mesure la qualité des tests | Oui (sandbox ou conteneur) |
+| `/al-metrics` | Mesure la sur-structure : profondeur d'appel, fonctions passe-plat, events sans abonné, code mort, bruit de commentaires | Non |
 
 ---
 

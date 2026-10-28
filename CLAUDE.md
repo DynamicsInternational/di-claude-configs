@@ -32,7 +32,7 @@ claude-configs/
 │   │   └── al-repo-summarizer.md    # (workflow specialists are spawned by skills)
 │   ├── skills/                      # model-invoked skills (/-prefixed)
 │   │   ├── init-context/  interview/  fit-gap/  plan/  develop/  fix/  test/  document/
-│   │   ├── compile/  publish/  run-tests/  local-bc/  al-symbols/  al-mutate/
+│   │   ├── compile/  publish/  run-tests/  local-bc/  al-symbols/  al-mutate/  al-metrics/
 │   │   └── build-tools/  review-checklists/  bc-source/  verify-tests/
 │   ├── rules/                       # 5 auto-loaded AL guardrail files
 │   │   ├── al-engineering.md        # Always loaded

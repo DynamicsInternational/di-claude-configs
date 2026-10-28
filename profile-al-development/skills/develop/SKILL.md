@@ -11,6 +11,7 @@ You are the engineering manager. You do NOT write code. You orchestrate develope
 
 - Auto-generate a task slug from the requirement (or reuse an existing one if continuing work).
 - Ensure `.dev/<task-slug>/` directory exists. Create it if needed.
+- Record the starting commit (`git rev-parse HEAD`) as the task's base ref — used by the metrics scan (Step 5.5).
 
 ## Step 2: Read Solution Plan (REQUIRED)
 
@@ -60,6 +61,19 @@ As developer agents work:
 - **Naming consistency:** Verify that naming conventions are consistent across all developers (prefixes, affixes, casing).
 - **Object ID usage:** Verify no duplicate object IDs across developers. Each developer should use IDs from their assigned range.
 
+## Step 5.5: Structure Metrics (informative)
+
+Run the `/al-metrics` scan on the app, scoped to what this task changed:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/skills/al-metrics/al-metrics.js" <appDir> --changed <base-ref> \
+  --json .dev/<task-slug>/04-metrics.json --md .dev/<task-slug>/04-metrics.md
+```
+
+Never blocking. Hand `04-metrics.md` to the AL Expert reviewer: relays, deep chains, events without
+subscriber (PTE), dead code and single-implementation interfaces in the changed files are leads for its
+subtractive review — confirmed or dismissed there, not fixed automatically.
+
 ## Step 6: Spawn 4 Reviewer Agents IN PARALLEL
 
 When all development is complete:
@@ -76,6 +90,7 @@ When all development is complete:
    - The complete list of all AL files to review
    - The solution plan for context
    - `.dev/project-context.md` (Test Policy, Extensibility Level, Business Rules Map)
+   - AL Expert only: `.dev/<task-slug>/04-metrics.md` (Step 5.5)
    - The shared BCQuality CHECK-mode protocol (cite every finding by rule path — see `reviewer-prompts.md` header)
 5. Use model: **sonnet** for all reviewers.
 
@@ -125,6 +140,10 @@ Write `.dev/<task-slug>/03-code-review.md` with YOUR synthesis (not a copy-paste
 | # | Issue | Severity | Reviewer | Recommendation | BCQuality Ref |
 |---|-------|----------|----------|----------------|---------------|
 | 1 | ... | HIGH/MINOR | ... | ... | <rule path or n/a> |
+
+## Structure Metrics
+Key figures from `04-metrics.md` for the changed files (max depth, relays, events without subscriber,
+dead code) and what the AL Expert concluded about each lead. Informative.
 
 ## Manual Acceptance Checklist
 From the Test Coverage reviewer — always present when Test Policy is `none`, otherwise only for

@@ -21,13 +21,19 @@ This profile implements a **Lead-as-Manager** workflow backed by **skills** (mod
 - **Development policies** — per-project Extensibility Level (PTE/Product) and Test Policy (none/light/full), plus a Business Rules Map so each increment modifies the rule where it lives
 - **MCP integration** — BC Code Intelligence, Microsoft Docs, AL Dependency, ALCOPS
 
-## What changed in 5.5.0 — LethAL mutation testing
+## What changed in 5.5.0 — LethAL mutation testing, structure metrics
 
-`al-mutate` (`MSDyn365BC.AL.Mutate`) is deprecated. `/al-mutate` and `/verify-tests` now drive
-[LethAL](https://github.com/SShadowS/LethAL): scoped runs (`--only`) on a BC sandbox or dev container
-(backend `bcdev`, authoritative) or in memory through al-runner v3 (not authoritative, not on Windows);
-manual mutations remain for rules LethAL cannot measure (UI-bound tests). Also fixed: `Library - ERM`
-helper and `ExpectedTestFieldError` location in the test template, real `al runtests` syntax for ALTool.
+- **`/al-metrics`** (new) — static scan measuring over-structure: call depth, relay procedures, events
+  without subscriber, dead code, comment noise, single-implementation interfaces, Boolean parameter
+  lists. Runs at the end of `/develop` on the changed files (informative, feeds the AL Expert's
+  subtractive review); also used for baselines and plugin A/B comparisons.
+
+- **LethAL** — `al-mutate` (`MSDyn365BC.AL.Mutate`) is deprecated. `/al-mutate` and `/verify-tests` now
+  drive [LethAL](https://github.com/SShadowS/LethAL): scoped runs (`--only`) on a BC sandbox or dev
+  container (backend `bcdev`, authoritative) or in memory through al-runner v3 (not authoritative, not on
+  Windows); manual mutations remain for rules LethAL cannot measure (UI-bound tests).
+- **Fixes** — `Library - ERM` helper and `ExpectedTestFieldError` location in the test template, real
+  `al runtests` syntax for ALTool.
 
 ## What changed in 5.4.0 — readable, incremental-friendly code
 
@@ -115,6 +121,7 @@ Invoke with `/`. Skills marked *(reference)* are auto-loaded knowledge rather th
 - `/local-bc` — Manage a local BC instance for dev/testing
 - `/al-symbols` — Download dependency symbol packages from Microsoft NuGet feeds
 - `/al-mutate` — Mutation testing with LethAL to surface test-suite gaps (BC sandbox/container; in-memory via al-runner v3 off Windows)
+- `/al-metrics` — Structure metrics: call depth, relay procedures, events without subscriber, dead code, comment noise (static, no BC)
 - `/translate` — Localize XLIFF files (fr-FR default; other languages if specified); runs at the end of `/develop`
 
 ### Knowledge & Lookup Skills

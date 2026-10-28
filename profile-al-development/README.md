@@ -1,6 +1,6 @@
 # AL Development Profile — Lead-as-Manager
 
-**Version:** 5.3.1
+**Version:** 5.4.0
 
 Claude Code profile for Microsoft Dynamics 365 Business Central AL development. The main session acts as an **engineering manager** that orchestrates specialist teammate agents — it never writes code itself. Work is parallelized across agent teams, documented to files, and gated by user approval.
 
@@ -13,12 +13,28 @@ This profile implements a **Lead-as-Manager** workflow backed by **skills** (mod
 - **Lead-as-Manager orchestration** — Main session spawns specialist teammates for parallel work
 - **Competitive solution design** — 2-3 architect agents debate approaches, the lead synthesizes
 - **Parallel implementation** — N developer agents work different modules concurrently
-- **Parallel review** — 4 specialists (security, AL expert, performance, test coverage)
+- **Parallel review** — 4 specialists (security, AL expert with subtractive simplicity review, performance, test & regression)
 - **Parallel test development** — 4 test engineers (unit, integration, scenario, edge case)
 - **Smart complexity routing** — TRIVIAL / SIMPLE / MEDIUM / COMPLEX → matching skill
 - **Project memory** — `.dev/project-context.md` cuts 40-60% off workflow runtime
-- **Standing AL rules** — Naming, architecture, data access, conventions auto-loaded
+- **Standing AL rules** — Readability-first engineering, architecture, naming, conventions auto-loaded
+- **Development policies** — per-project Extensibility Level (PTE/Product) and Test Policy (none/pure/full), plus a Business Rules Map so each increment modifies the rule where it lives
 - **MCP integration** — BC Code Intelligence, Microsoft Docs, AL Dependency, ALCOPS
+
+## What changed in 5.4.0 — readable, incremental-friendly code
+
+Generated code had drifted toward over-structure (deep call chains, relay procedures, speculative
+events and interfaces, paraphrasing comments, duplicated rules across tickets). 5.4.0 realigns the
+profile on idiomatic BC code for projects that evolve brick by brick:
+
+- **Rules** — readability first, modify-don't-pile-up, DRY by rule of three, event and interface
+  policies, "testable without overhead" with BC test seams instead of dependency injection,
+  comment policy (why, not what; no ticket history).
+- **Develop / Plan** — mandatory "find the existing code" step, Extension mode, rewritten code
+  templates, Reuse & Extension and Test Approach sections in the plan.
+- **Review** — subtractive review owned by the AL expert (over-abstraction, duplicated rules and
+  wrong comments are HIGH); the test reviewer follows the Test Policy and produces a manual
+  acceptance checklist when the project has no test app.
 
 ## Quick Start
 

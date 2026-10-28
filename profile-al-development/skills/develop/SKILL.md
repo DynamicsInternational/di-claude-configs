@@ -75,6 +75,7 @@ When all development is complete:
    - Their specific prompt section from `reviewer-prompts.md`
    - The complete list of all AL files to review
    - The solution plan for context
+   - `.dev/project-context.md` (Test Policy, Extensibility Level, Business Rules Map)
    - The shared BCQuality CHECK-mode protocol (cite every finding by rule path — see `reviewer-prompts.md` header)
 5. Use model: **sonnet** for all reviewers.
 
@@ -87,7 +88,7 @@ When all reviewers complete:
 1. **Collect** all findings from all 4 reviewers.
 2. **Categorize** each finding:
    - **CRITICAL** — Must fix. Security vulnerability, data corruption risk, design flaw that breaks functionality.
-   - **HIGH** — Should fix. Performance issue, DRY violation, missing error handling, poor pattern usage.
+   - **HIGH** — Should fix. Performance issue, DRY violation or duplicated business rule, over-abstraction (pass-through, deep call chain, speculative interface/event), parallel variant instead of in-place change, wrong comment, missing error handling, poor pattern usage.
    - **MINOR** — Nice to have. Documentation gaps, naming style preferences, minor readability improvements.
 3. **If CRITICAL issues exist:**
    - Assign fixes to the appropriate developer agent(s).
@@ -124,6 +125,10 @@ Write `.dev/<task-slug>/03-code-review.md` with YOUR synthesis (not a copy-paste
 | # | Issue | Severity | Reviewer | Recommendation | BCQuality Ref |
 |---|-------|----------|----------|----------------|---------------|
 | 1 | ... | HIGH/MINOR | ... | ... | <rule path or n/a> |
+
+## Manual Acceptance Checklist
+From the Test Coverage reviewer — always present when Test Policy is `none`, otherwise only for
+behavior not covered by tests. Scenario, expected result, regression risk.
 
 ## Standards Applied (BCQuality)
 The BCQuality rules that backed this review and implementation, cited by path — so the user sees

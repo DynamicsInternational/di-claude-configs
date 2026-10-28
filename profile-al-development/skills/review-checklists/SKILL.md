@@ -29,9 +29,11 @@ Before presenting a solution plan to the user, verify:
 - [ ] **Addresses all requirements** -- every stated requirement has a corresponding design element
 - [ ] **BC integration is sound** -- uses standard BC patterns (posting routines, event subscribers, standard tables) rather than reinventing platform functionality
 - [ ] **Edge cases identified** -- plan acknowledges boundary conditions, error scenarios, and concurrent usage
-- [ ] **Follows project patterns** -- consistent with existing codebase conventions (naming, architecture, module boundaries)
+- [ ] **Follows project patterns** -- consistent with existing codebase conventions (naming, architecture, module boundaries), except patterns that contradict `rules/`
+- [ ] **Modifies before adding** -- existing rules touched by the request are changed in place (Reuse & Extension section filled; Extension mode applied when relevant)
 - [ ] **Object IDs specified** -- all new objects have assigned IDs that do not conflict with existing ranges
-- [ ] **No over-engineering** -- plan solves what was asked, not a hypothetical future problem
+- [ ] **No over-engineering** -- plan solves what was asked, not a hypothetical future problem; no relay layers, single-implementation interfaces, factories or events beyond the Extensibility Level
+- [ ] **Test Approach matches the Test Policy** -- no interfaces or injection planned for testing
 - [ ] **Dependencies noted** -- any required base app or third-party dependencies are called out
 
 ---
@@ -46,8 +48,11 @@ Before presenting code to the user, verify:
 - [ ] **Compiles cleanly** -- no obvious syntax errors, missing semicolons, undeclared variables, or type mismatches
 - [ ] **Minimal changes** -- only the code necessary to fulfill the requirement; no unrelated refactoring
 - [ ] **No empty triggers** -- all trigger bodies contain code or are removed
-- [ ] **XML documentation** -- public procedures have `/// <summary>` comments
-- [ ] **Events raised** -- meaningful extension points have IntegrationEvents
+- [ ] **Readable flow** -- each business action can be followed top to bottom; no pass-through procedures, no ping-pong between objects, no more than two Boolean parameters
+- [ ] **No duplicated rule** -- no business decision implemented a second time; Business Rules Map updated
+- [ ] **Comments** -- short `/// <summary>` saying why on each procedure; no paraphrasing `<param>`, no ticket history, no commented-out code, no outdated comment
+- [ ] **Events justified** -- published events sit at business boundaries within the Extensibility Level; `IsHandled` only with a stated replacement use case; none consumed only by our own app
+- [ ] **No dead code** -- replaced procedures, unused variables and orphan events removed
 - [ ] **Error messages use FieldCaption** -- no hardcoded field names in error strings
 
 ---
@@ -60,6 +65,8 @@ Before presenting tests to the user, verify:
 - [ ] **Edge cases covered** -- boundary values, empty inputs, invalid data, permission scenarios
 - [ ] **bc-test passes** -- tests run successfully (or failures are explained and tracked)
 - [ ] **Meaningful assertions** -- each test asserts specific expected outcomes, not just "no error occurred"
+- [ ] **Behavior, not internals** -- tests go through business entry points; no production abstraction exists only for tests
+- [ ] **Updated, not duplicated** -- a changed requirement updated the existing test instead of adding a parallel one
 - [ ] **No object ID conflicts** -- test codeunit and helper object IDs are in the designated test range
 - [ ] **Test isolation** -- tests do not depend on execution order or shared mutable state
 - [ ] **Readable test names** -- procedure names describe the scenario and expected outcome

@@ -16,13 +16,16 @@ Blocks progress. Must be fixed before code can be accepted.
 ### SERIOUS
 Significant risk. Should be fixed unless there is a documented reason not to.
 - Performance issue that will degrade under production load
-- DRY violation (duplicated logic that will diverge over time)
+- DRY violation (duplicated logic that will diverge over time), including the same business rule implemented in several places
+- Over-abstraction that hurts readability: pass-through procedures, deep call chains, interfaces/factories with a single implementation, events outside business boundaries or beyond the Extensibility Level
+- Parallel variant added next to an existing rule instead of changing it in place
+- Wrong or outdated comment (misleads the next reader)
 - Missing error handling on user-facing operations
 - Incorrect BC pattern that will cause upgrade or integration issues
 
 ### MINOR
 Improvement suggestion. Can be deferred without risk.
-- Documentation gaps (missing XML doc comments, incomplete ToolTips)
+- Documentation gaps (missing procedure summary, incomplete ToolTips)
 - Naming style inconsistencies (not wrong, but not ideal)
 - Minor readability improvements
 - Additional test scenarios that are nice-to-have
@@ -78,7 +81,7 @@ After all findings are dispositioned, produce a summary table:
 | # | Finding | Reviewer | Severity | Disposition | Action / Reasoning |
 |---|---------|----------|----------|-------------|-------------------|
 | 1 | Missing SetLoadFields on Customer.Get | Performance | SERIOUS | ACCEPT-FIX | Assigned to Dev-1, fix in Customer Mgt. codeunit |
-| 2 | No interface for HTTP dependency | Test Coverage | SERIOUS | ACCEPT-DEFER | Will address in Phase 2 when external integration is built. Tracked in 04-deferred-issues.md |
+| 2 | Pass-through procedure `ValidateOrder` only forwards to `CheckCreditLimit` | AL Expert | SERIOUS | ACCEPT-FIX | Assigned to Dev-1, inline and call `CheckCreditLimit` directly |
 | 3 | ToolTip could be more descriptive | AL Expert | MINOR | ACKNOWLEDGE | Current ToolTip is adequate for MVP |
 | 4 | Potential SQL injection via SetFilter | Security | CRITICAL | ACCEPT-FIX | Assigned to Dev-2, add input sanitization |
 | 5 | Unused local variable | AL Expert | MINOR | DISMISS | Variable is used in a conditional branch the reviewer missed (line 45) |

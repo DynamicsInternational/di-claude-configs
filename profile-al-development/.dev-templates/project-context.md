@@ -11,6 +11,21 @@
 **Version:** [Version]
 **Base App Objects Used:** [Key tables/pages extended]
 
+## Development Policies
+
+> Set by the user (asked by `/init-context`). Agents apply them; they never change them on their own.
+
+**Extensibility Level:** [PTE | Product] — `PTE` when not declared
+- `PTE`: client-specific app — integration events at the entry/exit of major business processes, or on request.
+- `Product`: reusable app (AGF/ISV) — events at every stable business boundary, extensible enums + interfaces for behavior variants.
+
+**Test Policy:** [none | pure | full] — `none` when not declared
+- `none`: no test app. No tests are written; reviews produce a manual acceptance checklist instead.
+- `pure`: in-memory tests (`al-runner`) for naturally pure logic only (calculations, parsing, decision rules).
+- `full`: test app — BC tests on business flows (`Library -` codeunits) + in-memory tests for pure logic.
+
+Whatever the policy, code is written the same way: readable and testable without overhead (see `rules/al-architecture.md`).
+
 ## Directory Structure
 
 ```
@@ -69,6 +84,16 @@ src/
 
 ### Procedures We Call
 - **Customer.CalcAvailableCredit():** [When/why used]
+
+## Business Rules Map
+
+> One row per business rule: the single place that carries it. Read this before adding or changing
+> logic — if the rule is listed, change it there instead of writing a variant elsewhere.
+> Update it whenever a rule is added, moved or removed.
+
+| Business Rule | Owner (Object.Procedure) | Used By |
+|---------------|--------------------------|---------|
+| [Vendor/agreement is valid for ordering] | [Codeunit 50110 "PROJ Vendor Agreement Mgt.".IsAgreementValid()] | [Purchase release, requisition] |
 
 ## Common Code Locations
 

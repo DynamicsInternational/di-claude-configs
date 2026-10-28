@@ -17,10 +17,22 @@ Set a page-level default where all fields share the same area (almost always `Ap
 
 - No empty triggers. If a trigger has no code, remove it entirely.
 
-## XML Documentation
+## Comments and XML Documentation
 
-- All public procedures need `/// <summary>` XML doc comments.
-- Document every parameter, return value, and any non-obvious behavior.
+Comments explain **why**; the code shows **what** and **how**.
+
+- Every procedure (local, internal or public) gets a short `/// <summary>` — one or two lines saying
+  why it exists or which business rule it carries. If it takes three sentences to describe, the
+  procedure probably does too much.
+- `<param>` / `<returns>` only when they add information the name and type do not give: unit or
+  allowed values, `var` semantics (read / modified), meaning of a Boolean, side effects (database
+  write, `Commit`, UI). Never paraphrase the name (`<param name="CustomerNo">The customer number.</param>`).
+- Inline comments only for a non-obvious reason: a BC platform constraint, an edge case, a functional choice.
+- **No ticket history in code** (no "ADO #1234 — changed on…" narratives, no author/date blocks).
+  History belongs to commit messages and work items.
+- **No commented-out code.** Delete it; git keeps it.
+- **A comment that no longer matches the code is a defect.** When you change a procedure's behavior,
+  update its summary and comments in the same change.
 
 ## Compiler Diagnostics
 

@@ -21,7 +21,20 @@ Check if `.dev/project-context.md` already exists.
   - **Update** — Incrementally update only sections that are stale (check file modification dates, recent git commits).
   - **Regenerate** — Delete and rebuild from scratch.
   - **Cancel** — Abort the workflow.
+  In both Update and Regenerate, keep the existing **Development Policies** values unless the user changes them.
 - **If it does not exist**, proceed to Step 2.
+
+### Step 1b: Ask the Development Policies
+
+If the policies are not already set, ask the user with **AskUserQuestion** (one call, two questions):
+
+1. **Extensibility Level** — `PTE` (client-specific app, recommended default) or `Product` (reusable app, AGF/ISV).
+2. **Test Policy** — `none` (no test app, recommended default when the project has none), `pure`
+   (in-memory tests for pure logic only) or `full` (test app with BC tests on business flows).
+   Recommend `full` if a quick search finds test codeunits (`Subtype = Test`) in the workspace, `none` otherwise.
+
+Record the answers in the **Development Policies** section. These values drive event density,
+review behavior and the test workflow; agents never change them on their own.
 
 ### Step 2: Explore the Project
 
@@ -34,6 +47,10 @@ Spawn a subagent (medium thoroughness) to explore the AL project. The agent must
 5. **Common code locations** — Where utilities live, where business logic concentrates, where UI logic lives.
 6. **Dependencies** — app.json dependencies, runtime version, target platform.
 7. **Testing infrastructure** — Test codeunits, test runners, any test helper utilities.
+8. **Business rules map** — For each business rule the app enforces (eligibility checks, recurring
+   filters, calculations, status decisions), the object and procedure that carries it. When the
+   same rule is implemented in several places, list every location and flag it as **duplicated** —
+   these are consolidation candidates, not patterns to follow.
 
 Instruct the agent to be thorough but not exhaustive — aim for the information another developer (or agent) would need to start contributing within minutes.
 
@@ -76,6 +93,11 @@ The generated `.dev/project-context.md` must follow this structure:
 - **Runtime**: (from app.json)
 - **Target**: (from app.json)
 - **Brief Description**: One paragraph summarizing what this app does.
+
+## Development Policies
+
+- **Extensibility Level**: PTE | Product (asked in Step 1b; `PTE` when not declared)
+- **Test Policy**: none | pure | full (asked in Step 1b; `none` when not declared)
 
 ## Directory Structure
 
@@ -132,6 +154,15 @@ Permission set structure, how permissions are assigned.
 ### Called Procedures
 Notable calls to base app procedures and their context.
 
+## Business Rules Map
+
+One row per business rule — the single place that carries it. Rules implemented in several places
+are listed with every location and marked **duplicated**.
+
+| Business Rule | Owner (Object.Procedure) | Used By | Status |
+|---------------|--------------------------|---------|--------|
+| ... | ... | ... | OK / duplicated |
+
 ## Common Code Locations
 
 | Category | Path / Object | Notes |
@@ -166,5 +197,7 @@ Notable calls to base app procedures and their context.
 - If this file is more than 7 days old, suggest running init-context to refresh it.
 - Object IDs in the registry are authoritative — use the next available ID when creating new objects.
 - Follow the architectural patterns documented above; do not invent new patterns without explicit approval.
+  Patterns that contradict `rules/` (pass-through procedures, speculative events or interfaces) are not to be copied.
+- Before adding logic, check the Business Rules Map: change the owning procedure instead of writing a variant. Update the map when a rule is added, moved or removed.
 - Check Base App Integration Points before modifying extension objects.
 ```

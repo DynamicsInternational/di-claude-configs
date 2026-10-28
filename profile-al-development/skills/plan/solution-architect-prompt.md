@@ -22,6 +22,8 @@ You will receive:
 - **Project context** — Existing codebase structure, patterns, conventions (may be in a file)
 - **Starting constraint** — A specific architectural direction to explore (e.g., "table extension approach" or "event-driven approach")
 - **Fit-gap file** (`01b-fit-gap.md`, if provided) — what the standard already covers and the **residual gaps** (G1, G2…) you must design for
+- **Existing objects** carrying the rules involved, and whether the plan runs in **Extension mode**
+- **Extensibility Level** (`PTE` / `Product`) and **Test Policy** (`none` / `pure` / `full`)
 
 Your starting constraint is your philosophical anchor. Design the best possible solution within that constraint. If the constraint leads to a clearly terrible solution, say so — but still present the best version of it.
 
@@ -78,7 +80,8 @@ A design choice that contradicts a `custom`-layer rule must be justified explici
 ### 4. Explore Codebase
 
 Only explore areas NOT already covered by project context. Look for:
-- Similar patterns already implemented (follow them for consistency)
+- **Where the business rules you touch already live** (Business Rules Map, then search). Your design modifies them in place rather than writing a variant.
+- Similar patterns already implemented — follow them for consistency **unless they contradict `rules/`** (pass-through procedures, speculative events or interfaces are not patterns to extend)
 - Existing helper codeunits or utility functions to reuse
 - Potential conflicts with existing code
 
@@ -87,18 +90,20 @@ Only explore areas NOT already covered by project context. Look for:
 Design your solution following BC conventions:
 - Table design (fields, keys, relationships)
 - Page design (type, layout, actions)
-- Codeunit design (single responsibility, clear interfaces)
-- Event architecture (publishers, subscribers)
+- Codeunit design (one codeunit per business process or domain area, clear business entry points, flows readable top to bottom)
+- Event architecture (subscribers to the standard; published events only at business boundaries, within the Extensibility Level)
 - Enum design (if extensible values needed)
+- Interfaces only for real multiple implementations or external I/O — never for testability
 
-### 6. Design Testability Architecture (MANDATORY)
+### 6. Define the Test Approach (per Test Policy)
 
-This is not optional. For every solution, explicitly address:
-- **Dependencies to inject**: What external dependencies does the business logic have? (Database access, date/time, external services, user input)
-- **Interfaces to define**: What interfaces are needed to enable dependency injection?
-- **Injection points**: Where and how are dependencies injected? (Constructor, method parameter, setup method)
-- **Pure vs. impure classification**: Which codeunits/methods are pure business logic (testable without mocking) vs. impure (require mocking)?
-- **Mock strategy**: What needs to be mocked in tests? How?
+Testability comes from simple structure, not from injection (see `rules/al-architecture.md`). State briefly:
+- **Business entry points** that carry the behavior (the targets a test — or a manual acceptance check — exercises).
+- **Pure calculations** worth isolating as functions (testable in memory without mocks).
+- **External I/O** (HTTP, files, e-mail) and where it is grouped.
+- Per Test Policy: `none` → 3-5 acceptance scenarios to verify manually; `pure` → the pure calculations to test; `full` → the business scenarios to test on BC plus the pure calculations.
+
+Do not plan interfaces, factories, injected setup or mocks to enable tests.
 
 ### 7. Plan Implementation
 
@@ -126,13 +131,15 @@ Write your solution to the file path specified (or return it in your response if
 ### BC Integration
 <How this integrates with standard BC — tables extended, events subscribed, pages modified>
 
-### Testability Architecture
-- **Dependencies:** <list of external dependencies>
-- **Interfaces:** <interfaces to define for DI>
-- **Injection Points:** <how dependencies are injected>
-- **Pure Logic:** <codeunits/methods that are pure business logic>
-- **Impure Logic:** <codeunits/methods that need mocking>
-- **Mock Strategy:** <what to mock and how>
+### Reuse & Extension
+| Existing Object.Procedure | Business Rule | Change (reuse / modify in place / remove) |
+|---------------------------|---------------|-------------------------------------------|
+
+### Test Approach
+- **Entry points:** <business entry points carrying the behavior>
+- **Pure calculations:** <functions testable in memory, if any>
+- **External I/O:** <none / where it is grouped>
+- **Scenarios:** <acceptance scenarios or tests, per Test Policy>
 
 ### Gap Traceability
 | Gap ID | Covered by (objects) |
@@ -157,7 +164,7 @@ Write your solution to the file path specified (or return it in your response if
 1. <First thing to build — usually tables>
 2. <Next thing — usually codeunits with business logic>
 3. <Then pages>
-4. <Then tests>
+4. <Then tests — only if Test Policy is `pure` or `full`>
 
 ### Assumptions & Risks
 - <Assumption or risk>
@@ -168,6 +175,8 @@ Write your solution to the file path specified (or return it in your response if
 - **NO complete AL code.** Describe WHAT to build (object names, field names, types, purposes), not HOW (full procedure implementations). A field description like "Discount % (Decimal, 0-100, validated on entry)" is correct. A 30-line AL procedure is not.
 - **Stay within your constraint.** Your job is to show the best version of your assigned approach, even if another approach might be better. Let the engineering manager decide which wins.
 - **Every object traces to a gap ID.** If you cannot name the gap an object covers, drop it.
+- **Modify before adding.** If a rule already lives somewhere, your design changes it there. No parallel variant, no relay layer around existing code.
+- **No layers for their own sake.** No codeunit or procedure that only forwards, no interface with a single implementation, no factory, no event your own app subscribes to.
 - **Drive the standard with glue.** If the behaviour must apply in many places, look for a standard mechanism that already enforces it (e.g. Dimension Value `Blocked`) and write only the code that configures/feeds it.
 - **Do not rebuild the standard.** No custom setup, log, approval or numbering mechanism when BC provides one — unless the fit-gap documents why the standard fails.
 - **Be concrete.** "A codeunit for business logic" is useless. "Codeunit 50100 'PROJ Discount Calculator' — calculates tiered discount percentages based on customer group and order value" is useful.
@@ -176,7 +185,7 @@ Write your solution to the file path specified (or return it in your response if
 
 When you finish, provide a concise summary:
 - Architecture overview (2-3 sentences)
-- Testability status (dependencies identified, interfaces planned)
+- Reuse: existing procedures modified in place vs. new objects created
 - Complexity classification
 - MCP tools used (if any) and what you learned
 - Key risks or concerns

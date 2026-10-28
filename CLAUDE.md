@@ -39,7 +39,7 @@ claude-configs/
 │   │   ├── al-architecture.md  al-naming.md  al-conventions.md
 │   ├── hooks/                       # hooks.json + al-hook-record.js + al-hook-compile.js
 │   ├── .dev-templates/              # Template for /init-context
-│   ├── *.md                         # Shared reference docs (tdd-workflow, workflow-routing,
+│   ├── *.md                         # Shared reference docs (workflow-routing,
 │   │                                #   proportional-planning, task-coordination, feedback-resolution)
 │   └── README.md                    # Profile documentation
 ├── .gitignore

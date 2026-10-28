@@ -41,7 +41,7 @@ What to include:
 - Brief architecture overview (2-3 paragraphs)
 - Object allocation table
 - Key design decisions with brief rationale
-- Testability notes
+- Reuse & Extension (existing code modified in place) and Test Approach (per Test Policy)
 - Implementation sequence
 - One minimal diagram only if data flow is genuinely confusing
 
@@ -61,7 +61,8 @@ What to skip:
 What to include:
 - Full architecture description
 - Comprehensive object allocation
-- Testability architecture (dependencies, interfaces, mocks)
+- Reuse & Extension (existing procedures modified in place, business rules added/changed/removed)
+- Test Approach per Test Policy (entry points, pure calculations, scenarios) — no interfaces or mocks planned for testing
 - Key alternatives considered with rationale for rejection (brief)
 - Integration points and data flow
 - Implementation sequence with dependencies

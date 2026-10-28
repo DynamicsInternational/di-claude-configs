@@ -41,6 +41,19 @@ Outcome:
 - **Residual gap exists** → the scope of this plan is **only** the gaps marked for development
   in `01b-fit-gap.md` (plus any fit the user explicitly overrode in `## Decisions`).
 
+### Step 3c: Locate the Existing Feature — MANDATORY
+
+Most requests extend or change something the app already does. Before designing, find where the
+residual gap lands in the existing code:
+- Check the **Business Rules Map** in `.dev/project-context.md`, then search the workspace for the
+  business concepts of the request (LSP references, Grep).
+- List the existing objects/procedures that already carry the rules involved.
+
+If the gap **modifies or extends an existing feature**, the plan runs in **Extension mode**:
+- The default design is to change the owning code in place; new objects only for what genuinely does not exist.
+- A changed requirement replaces the old behavior (code and tests) — no parallel variant kept behind a flag.
+- Every architect receives the existing objects list and the constraint "extend in place".
+
 ### Step 4: Classify Complexity
 
 Classify the complexity of the **residual gap**, not of the original request. A request that
@@ -59,6 +72,8 @@ Use the Agent tool to spawn 2-3 agents simultaneously. Each agent gets:
 - The requirements (from file or user input)
 - The project context (if available)
 - The fit-gap file `.dev/<task-slug>/01b-fit-gap.md` (if produced) — design **only** the residual gaps it lists; every object must trace to a gap ID
+- The existing objects found in Step 3c, and the Extension mode flag if it applies
+- The project's **Extensibility Level** and **Test Policy** (from project context; `PTE` / `none` when not declared)
 - A **different starting constraint** to prevent convergence
 - The instruction to follow `/bcquality-citation` in **DESIGN** mode (consult BCQuality and cite the applicable rules as design constraints)
 
@@ -69,14 +84,20 @@ Use the Agent tool to spawn 2-3 agents simultaneously. Each agent gets:
   from the Location Card, not subscribers on every document). Prefer L3 over L4. You may
   conclude that part of a gap needs no code — say so and explain how."
 
+**In Extension mode, a second architect ALWAYS gets the extend-in-place constraint:**
+- "Design by **modifying the existing code in place** — change the procedures that already carry
+  the rules, add new objects only for what does not exist. Show which existing procedures change and how."
+
 Assign the other architect(s) different starting constraints such as:
+- "Design **idiomatic BC and readable** — the base-app way: one codeunit per business process, flows readable top to bottom, setup read where needed, no layers"
 - "Design around **table extensions** on existing BC tables — minimize new tables"
 - "Design with **separate custom tables** — minimize coupling to base app"
-- "Design using an **event-driven architecture** — maximize extensibility"
-- "Design for **maximum testability** — dependency injection, interfaces, pure functions"
+- "Design for **extensibility within the declared Extensibility Level** — events at stable business boundaries, extensible enums + interfaces for behavior variants"
 - "Design with **minimal footprint** — fewest objects, simplest approach that works"
 
 The specific constraints depend on the problem. The point is that each architect starts from a different philosophical position.
+Never assign a constraint that asks for interfaces, dependency injection or mocks for testability
+— testability comes from simple structure (see `rules/al-architecture.md`).
 
 ### Step 6: Facilitate Debate
 
@@ -99,12 +120,16 @@ Challenge weak points yourself. You do not need to spawn agents for this — app
 - Is the added complexity (new table, interface, factory) proportional to the gap? If the
   standard-first architect covers the same gaps with fewer objects, the burden of proof is on
   the bigger design.
+- Does it re-implement a rule the app already carries (Step 3c)? → modify the owner instead.
+- Does it add layers: a procedure or codeunit that only forwards, an interface with a single
+  implementation, a factory, an event our own app subscribes to? → cut the layer.
+- Are the published events within the declared Extensibility Level, at business boundaries? → cut the others.
 
 ### Step 7: Synthesize Winning Approach
 
 Pick the winning approach or create a hybrid. **This is YOUR decision, not the user's.** You are the engineering manager. Consider:
 - BC-native patterns and conventions
-- Testability and maintainability
+- Readability and ease of change — a developer must follow each business action without jumping through layers; the next brick must slot in by modifying, not stacking
 - Upgrade safety (will this survive BC major version updates?)
 - Implementation complexity vs. benefit — **default to the standard-first design** unless another
   approach brings a concrete, stated benefit for the residual gaps
@@ -118,7 +143,9 @@ Pick the winning approach or create a hybrid. **This is YOUR decision, not the u
 Write `.dev/<task-slug>/02-solution-plan.md` yourself. This is YOUR synthesis — do not copy-paste architect output. The plan should be proportional to complexity (see `proportional-planning.md`).
 
 Structure:
-- Architecture & Design (approach, BC integration points, testability architecture, alternatives considered with brief rationale for rejection)
+- Architecture & Design (approach, BC integration points, alternatives considered with brief rationale for rejection)
+- **Reuse & Extension** — existing objects/procedures reused or modified in place (from Step 3c and the Business Rules Map), and the business rules this plan adds, changes or removes with their owning procedure. "None — new feature" only when Step 3c found nothing.
+- **Test Approach** — per the project's Test Policy: `none` → key acceptance scenarios to verify manually; `pure` → the pure calculations to test in memory; `full` → business entry points to test on BC (behavior, not internals) plus pure calculations in memory. No interfaces or injection planned for testing.
 - **Gap Traceability** — table mapping each gap ID from `01b-fit-gap.md` to the objects that cover it. Every object appears at least once; every gap marked for development is covered.
 - **Minimal Option** — the standard-first alternative (objects count, what it does NOT cover) if it was not retained, so the user can still choose it
 - Implementation Plan (object allocation with names/IDs, files to create/modify, implementation sequence, assumptions and risks)
@@ -142,6 +169,7 @@ Present the solution summary to the user using AskUserQuestion with these option
 
 - **Standard first, not standard only.** Never design before the fit-gap gate (Step 3b). Scope = residual gap only. Specific development is fine when justified — keep its footprint and maintenance cost minimal.
 - **No object without a gap ID.** Untraceable objects are over-development — cut them.
+- **Modify before adding.** When the gap touches an existing feature, changing its code in place is the default; a new layer next to it needs a stated reason.
 - **Assign DIFFERENT starting points** to prevent architects from converging on the same solution. The whole point is competitive design.
 - **Challenge weak points yourself.** Do not just pick the longest or most detailed plan. Look for the one that best fits BC patterns and the specific requirements.
 - **Synthesize, don't copy.** Your solution plan should be better than any individual architect's output because it combines the best ideas from all of them.

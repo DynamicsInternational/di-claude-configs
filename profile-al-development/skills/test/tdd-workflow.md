@@ -18,9 +18,12 @@ The goal is to write a test that fails for the RIGHT reason (missing logic, not 
 
 ### Steps
 
-1. **Write the test codeunit** following the spec and assigned test scenarios
-2. **Implement mock repositories** for dependency injection (interfaces with stub implementations)
-3. **Create MINIMAL production code stubs** — enough to compile, but NO actual logic
+1. **Write the test codeunit** following the spec and assigned test scenarios. The test exercises **business behavior through a business entry point**:
+   - a business flow → BC test with `Library -` codeunits, asserting on the resulting data;
+   - a pure calculation → in-memory test calling the function with values.
+   No mock repositories, no interfaces or injected setup added for the test — control the context with test data, setup records, `WorkDate()`, handlers or manually bound subscribers (see `rules/al-architecture.md`).
+2. **Changing an existing behavior?** Do not add a parallel test. Update the expectation of the existing test so it now fails, and skip the stub step — the existing code is the RED baseline.
+3. **New behavior:** create MINIMAL production code stubs — enough to compile, but NO actual logic
    - Procedures return default values (0, '', false)
    - No business rules, no calculations, no validations
 4. **Compile:**
@@ -62,13 +65,12 @@ The goal is to write the MINIMUM production code that makes the test pass. No mo
 
 ### Steps
 
-1. **Implement ACTUAL production logic** — replace the stubs from RED phase with real code
-2. **Implement real interface implementations** (replace mocks with production code where appropriate)
-3. **Compile, publish, and run the test:**
+1. **Implement ACTUAL production logic** — replace the stubs from RED phase with real code, or change the existing code in place when the behavior already lived somewhere
+2. **Compile, publish, and run the test:**
    ```bash
    al-compile && bc-publish && bc-test -o .dev/<task-slug>/test-results-green.txt
    ```
-4. **HARD STOP** — Use AskUserQuestion:
+3. **HARD STOP** — Use AskUserQuestion:
 
    > **GREEN Phase Complete**
    >
@@ -79,7 +81,7 @@ The goal is to write the MINIMUM production code that makes the test pass. No mo
    > - **Test still FAILS** — Need to iterate on implementation
    > - **Need troubleshooting** — Help me debug
 
-5. **If the test still fails:** iterate on the implementation until it passes. Do NOT move to REFACTOR until GREEN.
+4. **If the test still fails:** iterate on the implementation until it passes. Do NOT move to REFACTOR until GREEN.
 
 ---
 
@@ -89,13 +91,12 @@ The goal is to improve code quality WITHOUT changing behavior. All tests must co
 
 ### Steps
 
-1. **Refactor production code:**
-   - Extract helper procedures
+1. **Refactor production code** toward readability (see `rules/al-engineering.md`):
+   - Inline pass-through procedures; extract only distinct business steps or pure calculations
+   - Remove duplication and dead code; flatten nesting with early exits
    - Improve variable and procedure names
-   - Add XML documentation comments
+   - Update procedure summaries so they still say why the code exists
    - Optimize performance (remove redundant calls, simplify logic)
-   - Apply DRY (Don't Repeat Yourself)
-   - Improve readability
 
 2. **Refactor test code:**
    - Extract shared setup into helper procedures

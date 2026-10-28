@@ -412,21 +412,29 @@ al-runner --help
 
 ---
 
-## al-mutate (mutation testing)
+## LethAL (mutation testing)
 
-Mesure la qualité des tests.
+Mesure la qualité des tests. Remplace `al-mutate` (`MSDyn365BC.AL.Mutate`), déprécié.
+Pas encore de release : on compile le binaire depuis les sources (nécessite [Bun](https://bun.sh)).
 
 Installation :
 
 ```powershell
-dotnet tool install --global MSDyn365BC.AL.Mutate
+git clone https://github.com/SShadowS/LethAL
+cd LethAL
+bun install
+bun run build:binary
 ```
+
+Le binaire produit (`build\lethal-<version>-windows-x64.exe`) est autonome : copiez-le dans un dossier du `PATH` sous le nom `lethal.exe`.
 
 Vérification :
 
 ```powershell
-al-mutate --help
+lethal --version
 ```
+
+Pour s'exécuter sur BC (backend `bcdev`), LethAL a besoin de `bc-dev-mcp`, de l'app `LethAL Control` publiée sur la sandbox ou le conteneur, et d'un `lethal.config.json` par projet (`lethal init`, à ne pas committer : il contient les identifiants). Le backend en mémoire `al-runner-v3` est refusé sous Windows.
 
 ---
 

@@ -1,6 +1,6 @@
 # AL Development Profile — Lead-as-Manager
 
-**Version:** 5.4.0
+**Version:** 5.5.0
 
 Claude Code profile for Microsoft Dynamics 365 Business Central AL development. The main session acts as an **engineering manager** that orchestrates specialist teammate agents — it never writes code itself. Work is parallelized across agent teams, documented to files, and gated by user approval.
 
@@ -20,6 +20,14 @@ This profile implements a **Lead-as-Manager** workflow backed by **skills** (mod
 - **Standing AL rules** — Readability-first engineering, architecture, naming, conventions auto-loaded
 - **Development policies** — per-project Extensibility Level (PTE/Product) and Test Policy (none/light/full), plus a Business Rules Map so each increment modifies the rule where it lives
 - **MCP integration** — BC Code Intelligence, Microsoft Docs, AL Dependency, ALCOPS
+
+## What changed in 5.5.0 — LethAL mutation testing
+
+`al-mutate` (`MSDyn365BC.AL.Mutate`) is deprecated. `/al-mutate` and `/verify-tests` now drive
+[LethAL](https://github.com/SShadowS/LethAL): scoped runs (`--only`) on a BC sandbox or dev container
+(backend `bcdev`, authoritative) or in memory through al-runner v3 (not authoritative, not on Windows);
+manual mutations remain for rules LethAL cannot measure (UI-bound tests). Also fixed: `Library - ERM`
+helper and `ExpectedTestFieldError` location in the test template, real `al runtests` syntax for ALTool.
 
 ## What changed in 5.4.0 — readable, incremental-friendly code
 
@@ -106,7 +114,7 @@ Invoke with `/`. Skills marked *(reference)* are auto-loaded knowledge rather th
 - `/run-tests` — Execute test codeunits (`al-runner` for pure logic, `bc-test` for integration)
 - `/local-bc` — Manage a local BC instance for dev/testing
 - `/al-symbols` — Download dependency symbol packages from Microsoft NuGet feeds
-- `/al-mutate` — Mutation testing to surface test-suite gaps (no BC instance required)
+- `/al-mutate` — Mutation testing with LethAL to surface test-suite gaps (BC sandbox/container; in-memory via al-runner v3 off Windows)
 - `/translate` — Localize XLIFF files (fr-FR default; other languages if specified); runs at the end of `/develop`
 
 ### Knowledge & Lookup Skills

@@ -54,8 +54,15 @@ Pick what the project has, in this order of preference:
 
 1. **Online sandbox from VS Code** (BC 28+) — Test Explorer, profile *Publish & Run*; *Coverage (Procedure)*
    adds per-procedure coverage. Isolation comes from `RequiredTestIsolation` on each test codeunit.
-2. **ALTool** (command line / CI) — compiles, deploys and runs the test project, structured JSON results.
-   Check `altool --help` for the syntax available in your AL tools version.
+2. **ALTool** (command line / CI, BC 2026 wave 2+) — runs test codeunits already published on the
+   server; publish the app and the test app first. Connection settings come from the project's `launch.json`.
+   ```bash
+   al runtests 50150 --project ./test                        # one codeunit (all methods)
+   al runtests 50150 --testmethods MethodA --project ./test  # selected methods
+   al runtests --testgroups testgroups.json --project ./test # batch: [{"codeunitId": 50150}, ...]
+   ```
+   Structured JSON on stdout (`data.passed/failed/skipped`, per-method `status` and `output`; `--raw` for a
+   console summary); exit code 0 = no failure, 1 otherwise.
 3. **Container** — `bc-test` (from bc-linux or bc-tools) after publishing the app then the test app
    (`/publish`, `/local-bc`); the default for large suites and CI gates per Microsoft.
 

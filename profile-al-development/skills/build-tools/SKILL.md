@@ -33,7 +33,7 @@ al-compile && bc-publish && bc-test
 |------|---------|-------|-------------|
 | `al-compile` | Compile AL project with analyzers | `/compile` | No |
 | `al-runner` | Run the test suite in memory (fast loop, Base App compiled from source) | `/run-tests` | No |
-| `al-mutate` | Mutation testing to validate test quality | `/al-mutate` | No |
+| `lethal` (LethAL) | Mutation testing to validate test quality | `/al-mutate` | Yes for `bcdev` (authoritative); no for `al-runner-v3` (not on Windows) |
 | `bc-publish` | Deploy .app to BC server | `/publish` | Yes |
 | `bc-test` | Run full integration tests via BC OData API | `/run-tests` | Yes |
 
@@ -41,6 +41,6 @@ al-compile && bc-publish && bc-test
 
 `bc-publish` and `bc-test` read from `.bcconfig.json` in project root. Create with `bc-publish --init`.
 
-`al-runner` and `al-mutate` work directly from AL source directories — no config file needed.
+`al-runner` works directly from AL source directories — no config file needed. LethAL reads `lethal.config.json` (`lethal init`).
 
 See individual skills (`/compile`, `/publish`, `/run-tests`, `/al-mutate`) for full options and usage.

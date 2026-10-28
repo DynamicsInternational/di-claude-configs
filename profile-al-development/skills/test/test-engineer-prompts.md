@@ -64,8 +64,10 @@ line in your report so they flow into the user-facing `05-test-plan.md` delivera
 - One behavior per `[Test]`; `// [GIVEN] / [WHEN] / [THEN]` comments in business language.
 - Specific assertions with a message (`Assert.AreEqual(Expected, Actual, 'why it matters')`).
 - **Every `asserterror` is pinned to the expected error** (BCQuality `testing/asserterror-needs-expectederror-and-code`):
-  `Assert.ExpectedTestFieldError(FieldCaption, Value)` for a `TestField`; otherwise `Assert.ExpectedError`
-  on a stable fragment — ideally the production `Label` — plus `Assert.ExpectedErrorCode` when known.
+  `ExpectedTestFieldError(FieldCaption, Value)` for a `TestField` (on codeunit `Assert` from
+  Tests-TestLibraries — `Library Assert` does not have it); otherwise `Assert.ExpectedError` on a stable
+  fragment — ideally the production `Label` — plus `Assert.ExpectedErrorCode` when known (`'Dialog'`
+  for an `Error()` call, `'TestField'` for a `TestField`).
   A bare `asserterror` passes on any error, including a missing setup.
 - Each test builds its own data with `Library -` codeunits; use `Any` / `Library - Random` for values that
   do not matter, hard-coded values only when the value is the point of the test. No dependency on demo
@@ -177,11 +179,14 @@ codeunit 50150 "CXT Item Import Tests"
     end;
 
     local procedure Initialize()
+    var
+        GenProdPostingGroup: Record "Gen. Product Posting Group";
     begin
         // Shared setup of the area, rebuilt for each test (isolation rolls it back).
         ImportSetup.DeleteAll();
         ImportSetup.Init();
-        ImportSetup."Gen. Prod. Posting Group" := LibraryERM.CreateGenProdPostingGroupCode(); // check the helper exists in your symbols
+        LibraryERM.CreateGenProdPostingGroup(GenProdPostingGroup);
+        ImportSetup."Gen. Prod. Posting Group" := GenProdPostingGroup.Code;
         ImportSetup."Margin %" := 25;
         ImportSetup.Insert();
     end;

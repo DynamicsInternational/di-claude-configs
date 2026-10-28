@@ -1,6 +1,6 @@
 ---
 name: verify-tests
-description: Adversarial test verification. Proves AL test suites are meaningful by mutation sweeps (al-mutate through al-runner, plus sampled mutations on BC for what al-runner does not run), assertion auditing, and coverage gap analysis. Always runs as a sub-agent with clean context — never inline.
+description: Adversarial test verification. Proves AL test suites are meaningful by mutation sweeps (LethAL on a BC sandbox/container, or in memory through al-runner v3), assertion auditing, and coverage gap analysis. Always runs as a sub-agent with clean context — never inline.
 context: fork
 ---
 
@@ -29,45 +29,47 @@ You receive:
 
 ## Tool Availability
 
-`al-mutate` (MSDyn365BC.AL.Mutate) is installed globally in the Docker image. No setup needed.
+Mutation sweeps use **LethAL** — see `/al-mutate` for setup, CLI and limits. Check it is ready:
 
 ```bash
-al-mutate --help       # verify it's available
-al-mutate --guide      # full AI agent reference
+lethal --version
+lethal doctor --config ./app/lethal.config.json
 ```
 
-`al-mutate` uses `al-runner` internally — **no running BC instance required** — Tests that `al-runner`
-reports **not run** cannot kill a mutation there: the business rules they cover are verified by a small
-sample of manual mutations run on BC (Step 5b), or reported as not mutation-verified when no BC
-environment is reachable.
+- **Backend `bcdev`** (BC sandbox / dev container): authoritative — use it whenever a BC environment is
+  reachable; it also runs the tests `al-runner` reports *not run*.
+- **Backend `al-runner-v3`**: fast, not authoritative, refused on Windows. Only to explore when no BC is
+  reachable, and say so in the verdict.
+- **Neither available**: fall back to manual mutations (Step 5b).
+
+LethAL mutates a temp copy and never touches the source tree. It does leave the mutated build published:
+republish the app (higher version) and the test app at the end.
 
 ---
 
 ## Run Tests
 
-For mutation testing, `al-mutate` calls `al-runner` internally. For standalone test runs:
-
-```bash
-al-runner test ./app ./test
-```
-
-Reference run on BC: see `/run-tests` (sandbox, ALTool or container).
-
-See `al-runner --guide` for the full reference.
+Standalone test runs: see `/run-tests` (`al-runner test ./app ./test` for the fast loop; sandbox,
+ALTool or container for the reference run).
 
 ---
 
-## Mutation Log Format
+## Mutation Results
 
-`al-mutate` writes `mutations.json` automatically using `--log .dev/<task-slug>/mutations.json`. The log is append-only (schema_version 1) with entries for each mutation including `file`, `line`, `original`, `mutated`, and `status` (KILLED / SURVIVED / COMPILE_ERROR / OBSOLETE / TIMED_OUT).
-
-Read this file after `al-mutate run` or `al-mutate replay` to extract results for the verdict report. Do not manually edit the log — `al-mutate` manages it.
+Per run, LethAL writes a JSON report (`--out .dev/<task-slug>/06-mutations-run<N>.json`) and keeps its
+history in `--db .dev/<task-slug>/lethal.sqlite` (used by `--resume` and `--skip-known-survivors`). Each
+mutant carries `file`, `line`, `procedureName`, `operatorName`, `originalText`, `mutatedText`, `verdict`
+(`killed` / `survived` / `no-coverage` / `timeout-killed` / `known-survivor` / `error`), `coveringTests`
+and `coverageAttribution` (`exact` / `object`). Run `lethal explain <report>` before writing the verdict.
+Never edit reports or the database.
 
 ---
 
 ## Step 0: Verify Clean Git State (MANDATORY BEFORE ANYTHING ELSE)
 
-Before reading any files or starting any analysis, verify that the working tree is clean:
+LethAL works on a copy, but manual mutations (Step 5b) edit the source in place and LethAL campaign
+records require a clean tree. Before reading any files or starting any analysis, verify that the
+working tree is clean:
 
 ```bash
 git status --porcelain
@@ -90,7 +92,7 @@ This is a hard stop. If a mutation cannot be reverted, `git checkout -- <file>` 
 
 ## Step 1: Determine Run Mode
 
-Check whether `.dev/<task-slug>/06-mutations.json` exists.
+Check whether a `.dev/<task-slug>/06-mutations-run*.json` report exists.
 
 - **Does not exist** → **First Run**. Proceed to Step 2 (read code), then Step 4 (new mutations).
 - **Exists** → **Subsequent Run**. Proceed to Step 2 (read code), then Step 3 (replay missed mutations first).
@@ -123,14 +125,12 @@ Read each file completely. Build a mental model of:
 
 ## Step 3: Replay Previously-Survived Mutations (Subsequent Runs Only)
 
-Delegate to `al-mutate replay`:
+Take the survivors of the latest report and check whether the tests added since then kill them:
+`lethal verify` for each named survivor (see `/al-mutate`), or a run scoped with `--only` to the files
+holding them (without `--skip-known-survivors`, so they are re-measured). Survivors whose line no longer
+exists are obsolete.
 
-```bash
-al-mutate replay .dev/<task-slug>/mutations.json --tests ./test/src \
-  2>&1 | tee .dev/<task-slug>/replay-output.txt
-```
-
-Read the output and `mutations.json` to produce a **Replay Summary** before continuing:
+Produce a **Replay Summary** before continuing:
 
 ```
 REPLAY SUMMARY
@@ -168,27 +168,30 @@ Also flag, as MAJOR:
 
 ## Step 5: New Mutation Sweeps
 
-### 5a. Sweep through `al-runner` — `al-mutate`
+### 5a. LethAL sweep
 
-Delegate to `al-mutate run`:
+Scope the run to the production files of the business areas under review (`--only`, repeatable) —
+never the whole app:
 
 ```bash
-al-mutate run ./src --tests ./test/src \
-  --log .dev/<task-slug>/mutations.json \
+lethal run --project ./app --tests ./test --backend bcdev \
+  --only "src/<Area>/**" \
+  --skip-known-survivors \
+  --db  .dev/<task-slug>/lethal.sqlite \
+  --out .dev/<task-slug>/06-mutations-run<N>.json \
   2>&1 | tee .dev/<task-slug>/mutation-run-output.txt
+lethal explain .dev/<task-slug>/06-mutations-run<N>.json
 ```
 
-With stubs (if needed for unsupported dependencies):
-```bash
-al-mutate run ./src --tests ./test/src --stubs ./test/stubs \
-  --log .dev/<task-slug>/mutations.json
-```
+Use `--backend al-runner-v3` only when no BC is reachable (not on Windows) and mark the results
+**not authoritative**. Do not narrow tests (`--tests-only`, `--exclude-test`): it changes verdicts.
 
-`al-mutate` handles the full cycle automatically: apply mutation → compile → test via al-runner → restore via git. It skips mutations already in the log.
+Exit code 3 (quarantined) or 4 (nothing scored): report it, do not read verdicts.
 
-Read `mutations.json` and `report.md` after the run to populate the mutation results for Step 8.
+### 5b. Manual mutations — what LethAL cannot measure
 
-**If al-mutate is unavailable** (e.g., running outside the Docker container), fall back to manual mutations:
+Business rules LethAL leaves unmeasured — covered only by tests it refuses (`TestPage`, `RunModal`),
+behind a `Confirm`, or no LethAL available at all — get a **sample of 5–10 manual mutations**:
 
 | Category | Mutation Examples |
 |----------|------------------|
@@ -200,31 +203,19 @@ Read `mutations.json` and `report.md` after the run to populate the mutation res
 | **Assignment swap** | Assign a different field than expected |
 | **Sign flip** | Negate a decimal result (`Amount` → `-Amount`) |
 
-For each manual mutation: apply → run the suite with `al-runner` → record result → `git checkout -- <file>` → verify clean.
+For each: apply → `al-compile` → run the area's tests (on BC: publish, run the codeunit — see
+`/run-tests`; or `al-runner` when the tests run there) → record CAUGHT / MISSED → `git checkout -- <file>`
+→ verify clean. Republish the app once at the end when BC was used.
 
-### 5b. Sampled mutations on BC
-
-For the business rules covered only by tests `al-runner` reports **not run** (and, on `full`, as a final
-confirmation of the sweep). Each mutation needs compile + publish + run, so sample instead of sweeping:
-
-1. Pick **5–10 mutations** on those business rules: validation removal, condition flip on a business decision, wrong field assigned,
-   date or amount shift.
-2. For each: apply → `al-compile` → publish the app → run the area's test codeunit on BC →
-   record CAUGHT / MISSED → `git checkout -- <file>` → verify clean → republish once at the end.
-3. Log them in the mutation log with `"runner": "bc-test"`.
-
-If no BC environment is reachable, skip 5b and state **"not mutation-verified on BC"** for those rules in the verdict.
+If no runner can execute those tests, state **"not mutation-verified"** for those rules in the verdict.
 
 ---
 
-## Step 6: Update Mutation Log
+## Step 6: Record Manual Mutations
 
-Write the updated `.dev/<task-slug>/06-mutations.json`:
-
-- Append a new entry to `runs[]` with this run's number, date, and all mutations applied (replayed + new)
-- For replayed mutations: update their status (`CAUGHT`, `STILL MISSED`, `OBSOLETE`)
-- For new mutations: add as new entries with their result
-- Never delete previous run history — the full run history must be preserved
+LethAL keeps its own history (report per run + `lethal.sqlite`). Append the manual mutations of Step 5b
+to `.dev/<task-slug>/06-manual-mutations.json` (run number, date, file, line, original, mutated, runner,
+result `CAUGHT` / `MISSED` / `OBSOLETE`). Never delete previous runs.
 
 ---
 
@@ -268,10 +259,11 @@ Write `.dev/<task-slug>/06-test-verification.md`:
 |-------|--------|
 | Assertion audit | X STRONG, Y WEAK, Z VACUOUS |
 | Replayed mutations (previously missed) | N fixed ✓, N still missed ✗, N obsolete ~ |
+| LethAL backend | bcdev / al-runner-v3 (not authoritative) / not available |
 | New mutations applied | N |
-| New mutations caught | N |
-| New mutations missed | N |
-| Sampled mutations on BC | N caught / N applied — or "not verified: no BC" |
+| New mutations killed | N |
+| New mutations survived / no-coverage | N / N |
+| Manual mutations (unmeasured rules) | N caught / N applied — or "not mutation-verified" |
 | Tests on internals / test-only production code | N |
 | Coverage gaps | N procedures uncovered |
 
@@ -343,7 +335,7 @@ Weak/vacuous assertions: N
 Coverage gaps: N
 
 Full report: .dev/<task-slug>/06-test-verification.md
-Mutation log: .dev/<task-slug>/06-mutations.json
+Mutation report: .dev/<task-slug>/06-mutations-run<N>.json
 
 Required fixes: <count>
 [List critical and major fixes inline]
@@ -353,10 +345,11 @@ Required fixes: <count>
 
 ## Rules
 
-1. **Never modify production files without restoring them.** Every mutation must be undone before the next one. Restore via `git checkout -- <file>`, not manual edits. If restore fails, STOP.
-2. **Never accept "all tests pass" as evidence.** That is your starting condition, not your conclusion.
-3. **Be specific.** Every finding must name the exact test, exact file, and exact line. No vague complaints.
-4. **Always replay before generating new mutations.** On subsequent runs, verify known gaps are fixed before hunting for new ones.
-5. **Never delete mutation history.** The log is append-only. Obsolete mutations are marked, not removed.
-6. **Grade honestly.** A test that catches 3 out of 4 mutations is better than one that catches 0. Report what survived, not just what failed.
-7. **Fix nothing yourself.** You identify problems. You do not fix them. Return your findings to the orchestrator.
+1. **Never modify production files without restoring them.** Every manual mutation must be undone before the next one. Restore via `git checkout -- <file>`, not manual edits. If restore fails, STOP.
+2. **Leave BC as you found it.** After a LethAL `bcdev` run or manual mutations on BC, republish the app and the test app.
+3. **Never accept "all tests pass" as evidence.** That is your starting condition, not your conclusion.
+4. **Be specific.** Every finding must name the exact test, exact file, and exact line. No vague complaints.
+5. **Always replay before generating new mutations.** On subsequent runs, verify known gaps are fixed before hunting for new ones.
+6. **Never delete mutation history.** LethAL reports and the database are kept; the manual log is append-only, obsolete mutations are marked, not removed.
+7. **Grade honestly.** A test that catches 3 out of 4 mutations is better than one that catches 0. Report what survived, not just what failed.
+8. **Fix nothing yourself.** You identify problems. You do not fix them. Return your findings to the orchestrator.

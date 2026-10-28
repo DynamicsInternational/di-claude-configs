@@ -59,7 +59,7 @@ wave 1+) — voir [Installation §7](01-Installation.md).
 |-------|------|---------------|
 | `al-compile` | Compiler avec les analyseurs | `/compile` |
 | `al-runner` | Tests unitaires **rapides** (sans serveur BC) | `/run-tests` |
-| `al-mutate` | Test de mutation (qualité des tests) | `/al-mutate` |
+| `lethal` (LethAL) | Test de mutation (qualité des tests) | `/al-mutate` |
 | `bc-publish` | Déployer le `.app` sur un serveur BC | `/publish` |
 | `bc-test` | Tests d'intégration via l'API OData de BC | `/run-tests` |
 

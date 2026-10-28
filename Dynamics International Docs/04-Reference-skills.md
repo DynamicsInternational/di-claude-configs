@@ -32,7 +32,7 @@ Tapez `/` dans Claude Code pour les voir, ou invoquez-les directement.
 | `/publish` | Déploie le `.app` sur un serveur BC (`bc-publish`) | Oui |
 | `/local-bc` | Gère une instance BC locale de dev/test | — |
 | `/al-symbols` | Télécharge les packages de symboles (`.app`) des dépendances | Non |
-| `/al-mutate` | Test de mutation : mesure la qualité des tests | Non |
+| `/al-mutate` | Test de mutation (LethAL) : mesure la qualité des tests | Oui (sandbox ou conteneur) |
 
 ---
 

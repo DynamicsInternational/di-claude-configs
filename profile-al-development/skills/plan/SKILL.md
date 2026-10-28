@@ -145,7 +145,7 @@ Write `.dev/<task-slug>/02-solution-plan.md` yourself. This is YOUR synthesis �
 Structure:
 - Architecture & Design (approach, BC integration points, alternatives considered with brief rationale for rejection)
 - **Reuse & Extension** — existing objects/procedures reused or modified in place (from Step 3c and the Business Rules Map), and the business rules this plan adds, changes or removes with their owning procedure. "None — new feature" only when Step 3c found nothing.
-- **Test Approach** — per the project's Test Policy: `none` → key acceptance scenarios to verify manually; `pure` → the pure calculations to test in memory; `full` → business entry points to test on BC (behavior, not internals) plus pure calculations in memory. No interfaces or injection planned for testing.
+- **Test Approach** — per the project's Test Policy: `none` → key acceptance scenarios to verify manually; `light` → the critical business rules to test through their entry points; `full` → every business scenario to test through its entry points (behavior, not internals). No interfaces or injection planned for testing.
 - **Gap Traceability** — table mapping each gap ID from `01b-fit-gap.md` to the objects that cover it. Every object appears at least once; every gap marked for development is covered.
 - **Minimal Option** — the standard-first alternative (objects count, what it does NOT cover) if it was not retained, so the user can still choose it
 - Implementation Plan (object allocation with names/IDs, files to create/modify, implementation sequence, assumptions and risks)

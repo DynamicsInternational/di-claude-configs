@@ -72,7 +72,7 @@ Lead classifies complexity → invokes the matching skill
 /develop   → N developer agents (parallel modules) → 4 reviewer specialists
              (security, AL expert, performance, test coverage)
     ↓ (approval gate)
-/test      → 4 test engineers in parallel (unit, integration, scenario, edge case)
+/test      → test engineers per business area: behavior tests, al-runner fast loop + BC reference (per Test Policy)
     ↓
 /verify-tests → adversarial verification (mutation sweeps, assertion audit)
 ```

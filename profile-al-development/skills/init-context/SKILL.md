@@ -29,8 +29,9 @@ Check if `.dev/project-context.md` already exists.
 If the policies are not already set, ask the user with **AskUserQuestion** (one call, two questions):
 
 1. **Extensibility Level** — `PTE` (client-specific app, recommended default) or `Product` (reusable app, AGF/ISV).
-2. **Test Policy** — `none` (no test app, recommended default when the project has none), `pure`
-   (in-memory tests for pure logic only) or `full` (test app with BC tests on business flows).
+2. **Test Policy** — `none` (no test app, recommended default when the project has none), `light`
+   (test app on the critical business rules, run with `al-runner` only) or `full` (test app on every
+   business area touched, `al-runner` + reference runs on BC).
    Recommend `full` if a quick search finds test codeunits (`Subtype = Test`) in the workspace, `none` otherwise.
 
 Record the answers in the **Development Policies** section. These values drive event density,
@@ -97,7 +98,7 @@ The generated `.dev/project-context.md` must follow this structure:
 ## Development Policies
 
 - **Extensibility Level**: PTE | Product (asked in Step 1b; `PTE` when not declared)
-- **Test Policy**: none | pure | full (asked in Step 1b; `none` when not declared)
+- **Test Policy**: none | light | full (asked in Step 1b; `none` when not declared)
 
 ## Directory Structure
 

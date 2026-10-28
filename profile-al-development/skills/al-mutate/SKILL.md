@@ -31,7 +31,10 @@ al-mutate --guide
 ## Prerequisites
 
 - Clean git working tree (enforced — aborts if dirty)
-- AL test codeunits compatible with `al-runner` (Subtype = Test, pure logic)
+- A test suite that `al-runner` can execute. Tests it reports **not run** cannot kill mutations here;
+  `/verify-tests` covers their rules with sampled mutations on BC.
+- Check which `al-runner` version `al-mutate` drives (`al-mutate --guide`): AL Runner v2 is frozen,
+  v3 runs far more of the Base App.
 - No BC instance required
 
 ## CLI Reference

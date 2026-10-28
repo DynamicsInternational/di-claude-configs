@@ -19,10 +19,10 @@
 - `PTE`: client-specific app — integration events at the entry/exit of major business processes, or on request.
 - `Product`: reusable app (AGF/ISV) — events at every stable business boundary, extensible enums + interfaces for behavior variants.
 
-**Test Policy:** [none | pure | full] — `none` when not declared
+**Test Policy:** [none | light | full] — `none` when not declared
 - `none`: no test app. No tests are written; reviews produce a manual acceptance checklist instead.
-- `pure`: in-memory tests (`al-runner`) for naturally pure logic only (calculations, parsing, decision rules).
-- `full`: test app — BC tests on business flows (`Library -` codeunits) + in-memory tests for pure logic.
+- `light`: test app with tests on the critical business rules, run with `al-runner` (no BC test environment required).
+- `full`: test app covering every business area touched, run with `al-runner` for the fast loop and on BC (sandbox, ALTool/CI or container) as the reference; adversarial verification; characterization before refactors.
 
 Whatever the policy, code is written the same way: readable and testable without overhead (see `rules/al-architecture.md`).
 

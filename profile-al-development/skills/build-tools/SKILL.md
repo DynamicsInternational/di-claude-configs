@@ -8,22 +8,22 @@ user-invocable: false
 
 ## Standard Cycles
 
-**Unit test cycle (no BC required — fast):**
+**Fast test loop (no BC required — al-runner, whole suite):**
 ```
-/compile → al-runner ./src ./test
+/compile → al-runner test ./app ./test
 ```
 
-**Full integration cycle (BC required):**
+**Reference test run (BC required — sandbox, ALTool or container):**
 ```
 /compile → /publish → /run-tests (bc-test)
 ```
 
 Or as shell commands:
 ```bash
-# Unit tests only
-al-compile && al-runner ./src ./test
+# Fast loop
+al-compile && al-runner test ./app ./test
 
-# Full integration
+# Reference run in a container
 al-compile && bc-publish && bc-test
 ```
 
@@ -32,7 +32,7 @@ al-compile && bc-publish && bc-test
 | Tool | Purpose | Skill | BC Required? |
 |------|---------|-------|-------------|
 | `al-compile` | Compile AL project with analyzers | `/compile` | No |
-| `al-runner` | Run pure-logic unit tests in milliseconds | `/run-tests` | No |
+| `al-runner` | Run the test suite in memory (fast loop, Base App compiled from source) | `/run-tests` | No |
 | `al-mutate` | Mutation testing to validate test quality | `/al-mutate` | No |
 | `bc-publish` | Deploy .app to BC server | `/publish` | Yes |
 | `bc-test` | Run full integration tests via BC OData API | `/run-tests` | Yes |

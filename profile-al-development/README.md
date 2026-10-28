@@ -14,11 +14,11 @@ This profile implements a **Lead-as-Manager** workflow backed by **skills** (mod
 - **Competitive solution design** — 2-3 architect agents debate approaches, the lead synthesizes
 - **Parallel implementation** — N developer agents work different modules concurrently
 - **Parallel review** — 4 specialists (security, AL expert with subtractive simplicity review, performance, test & regression)
-- **Parallel test development** — 4 test engineers (unit, integration, scenario, edge case)
+- **Test development by business area** — behavior tests built with the BC test libraries, run fast with al-runner and confirmed on BC (sandbox, ALTool or container), per Test Policy; characterization mode for existing code
 - **Smart complexity routing** — TRIVIAL / SIMPLE / MEDIUM / COMPLEX → matching skill
 - **Project memory** — `.dev/project-context.md` cuts 40-60% off workflow runtime
 - **Standing AL rules** — Readability-first engineering, architecture, naming, conventions auto-loaded
-- **Development policies** — per-project Extensibility Level (PTE/Product) and Test Policy (none/pure/full), plus a Business Rules Map so each increment modifies the rule where it lives
+- **Development policies** — per-project Extensibility Level (PTE/Product) and Test Policy (none/light/full), plus a Business Rules Map so each increment modifies the rule where it lives
 - **MCP integration** — BC Code Intelligence, Microsoft Docs, AL Dependency, ALCOPS
 
 ## What changed in 5.4.0 — readable, incremental-friendly code
@@ -35,6 +35,10 @@ profile on idiomatic BC code for projects that evolve brick by brick:
 - **Review** — subtractive review owned by the AL expert (over-abstraction, duplicated rules and
   wrong comments are HIGH); the test reviewer follows the Test Policy and produces a manual
   acceptance checklist when the project has no test app.
+- **Tests** — one suite organized by business area, behavior tests through business entry points,
+  no production code reshaped for tests; al-runner v3 as the fast loop and BC as the reference run;
+  `/test --characterize` builds a safety net on existing code before a refactor; `/verify-tests` adds
+  sampled BC mutations for what al-runner does not run; templates aligned on BCQuality `testing` rules.
 
 ## Quick Start
 
@@ -92,7 +96,7 @@ Invoke with `/`. Skills marked *(reference)* are auto-loaded knowledge rather th
 - `/plan` — Competitive solution design (2-3 architects debate, lead synthesizes)
 - `/develop` — Parallel implementation + 4-specialist code review
 - `/fix` — Lightweight 3-tier bug fix (no approval gates)
-- `/test` — Parallel test development (4 test engineers)
+- `/test` — Test suite by business area (al-runner fast loop, BC reference), `--characterize` for a safety net before a refactor
 - `/document` — Technical documentation generation (docs-writer specialist)
 - `/verify-tests` — Adversarial test verification (mutation sweeps, assertion audit)
 

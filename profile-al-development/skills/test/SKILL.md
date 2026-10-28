@@ -1,225 +1,191 @@
 ---
 name: test
-description: Develop comprehensive test suite using 4 parallel test engineer agents. Covers unit, integration, scenario, and edge case testing.
+description: Develop an AL test suite organized by business area — behavior tests through business entry points, built with the BC test libraries, run fast with al-runner and confirmed on BC, per the project's Test Policy. Also builds characterization tests (regression safety net) on existing code before a refactor with --characterize.
 ---
 
 # /test — Engineering Manager Orchestration
 
-You are the **Test Engineering Manager**. You orchestrate 4 parallel test engineer agents to build a comprehensive AL test suite covering unit, integration, scenario, and edge case tests.
+You are the **Test Engineering Manager**. You orchestrate test engineer agents that build an AL test
+suite which **tests business behavior, survives refactoring, and never reshapes production code**.
+
+## Two Modes
+
+| Mode | Invocation | Purpose |
+|------|-----------|---------|
+| **Feature** (default) | `/test` after `/develop`, or on a task | Tests for what was just built or changed |
+| **Characterize** | `/test --characterize <area or entry points>` | Safety net on **existing** code before a refactor — photographs current behavior |
+
+## One Suite, Two Runners
+
+Tests are written once, the BC way (`Library -` codeunits, handlers, `asserterror`), and organized by
+business area. The same tests run on two runners (see `/run-tests`):
+
+| Runner | Role | Needs |
+|--------|------|-------|
+| `al-runner` | **Fast loop** — run after every change, by agents and developers | Nothing (in-memory, Base App compiled from source) |
+| BC (sandbox via VS Code / ALTool, or container via `bc-test`) | **Reference** — confirms the result on real BC | A BC environment |
+
+Tests `al-runner` cannot execute are reported **"not run"** with a reason — they stay in the suite and
+run on BC. Never reshape production code or a test to make `al-runner` run it.
+
+## Step 0: Read the Test Policy
+
+Read **Test Policy** in `.dev/project-context.md` (`none` when not declared):
+
+- **`none`** — the project has no test app. Do not write tests. Use **AskUserQuestion**:
+  - **Acceptance checklist** — write `.dev/<task-slug>/05-acceptance-checklist.md` (scenario, steps, expected result, regression risk) and stop.
+  - **Start a test app** — switch the policy to `light` or `full` in project context and continue.
+  - **Stop**.
+- **`light`** — tests on the **critical business rules** touched; `al-runner` is enough; `/verify-tests` optional.
+- **`full`** — tests on **every business area** touched; reference run on BC; `/verify-tests` mandatory.
 
 ## Step 1: Task Slug Setup
 
-Auto-generate a task slug from the current task context (or reuse an existing one if continuing work). Ensure the `.dev/<task-slug>/` directory exists.
-
-```
-mkdir -p .dev/<task-slug>/
-```
+Auto-generate a task slug from the current task context (or reuse an existing one if continuing work).
+In Characterize mode use `characterize-<area>`. Ensure `.dev/<task-slug>/` exists.
 
 ## Step 2: Read Context
 
-Read ALL implemented AL files and `.dev/<task-slug>/02-solution-plan.md` to understand:
+- `.dev/project-context.md` — Business Rules Map, Testing Infrastructure.
+- Feature mode: `.dev/<task-slug>/02-solution-plan.md` (Test Approach section) and the AL files built or changed.
+- Characterize mode: the AL files of the area, starting from its entry points (page actions, public procedures, subscribers to standard processes).
+- **Existing test codeunits** for the areas involved — they are updated, not duplicated.
 
-- What objects exist (tables, codeunits, pages, enums, interfaces)
-- What business logic is implemented
-- What events are published/subscribed
-- What workflows exist
-- What validations are in place
+## Step 3: Check the Test App
 
-Use Glob to find all `.al` files in `src/` or `app/`, then Read each one.
+If no test app exists and the policy is `light` or `full`, propose creating it from `test-app-template.md`
+(this skill's directory) with **AskUserQuestion** before writing anything.
 
-## Step 3: Identify and Categorize Test Scenarios
+## Step 4: Build the Scenario List — by Business Area
 
-Analyze the implemented code and categorize every testable behavior into exactly 4 types:
+Group scenarios by **business area** (one area = one business process or rule family), never by test
+category. For each area, walk the **Coverage Checklist** of `test-engineer-prompts.md` — its four angles
+(calculation, integration, scenario, edge cases) are applied to every area, not split across agents:
 
-| Type | What to Test |
-|------|-------------|
-| **UNIT** | Calculation methods, validation logic, data transformations, pure functions, individual business rules in isolation |
-| **INTEGRATION** | Table-Codeunit interactions, event subscribers, multi-object workflows, API integrations, BC base app integration points |
-| **SCENARIO** | Complete user workflows, UI to Logic to Database flows, real-world use cases, multi-step business processes, happy path scenarios |
-| **EDGE CASE** | Null/empty inputs, boundary values (0, negative, MaxInt, MaxDecimal), error conditions, invalid data, concurrent access, special cases (currency rounding, date boundaries) |
+1. **Entry points** — the user actions / public procedures / standard processes that carry the behavior.
+2. **Scenarios** — main path, error paths, integration effects (triggers, subscribers, ledger entries),
+   calculations and decision rules, edge cases. `light`: critical rules only.
+3. **Changed behavior** — existing tests whose expectation must change, tests to delete for removed behavior.
+4. **Angles not covered** — with the reason (not applicable, needs data that cannot be built, external I/O).
 
-Create a concrete list of specific test scenarios for each category. Be explicit — assign SPECIFIC scenarios, not just "write tests."
+Be explicit — assign SPECIFIC scenarios, not "write tests for X".
 
-## Step 4: Assign Object ID Ranges
+## Step 5: Assign Engineers and ID Ranges
 
-Assign non-overlapping ID ranges to avoid conflicts between the 4 engineers:
+- **Feature mode**: one **Area Test Engineer** per business area, at most 4 in parallel (merge small areas).
+- **Characterize mode**: one **Characterization Test Engineer** per area, at most 4 in parallel.
+- Give each engineer a non-overlapping ID range inside the test app's range, and the existing test
+  codeunits of its area. Two engineers never write the same codeunit.
 
-| Engineer | ID Range | Purpose |
-|----------|----------|---------|
-| Unit Test Engineer | 50100–50199 | Unit test codeunits |
-| Integration Test Engineer | 50200–50299 | Integration test codeunits |
-| Scenario Test Engineer | 50300–50399 | Scenario test codeunits |
-| Edge Case Test Engineer | 50400–50499 | Edge case test codeunits |
+## Step 6: Spawn Engineers IN PARALLEL
 
-Adjust ranges based on the project's `app.json` ID range and any already-used IDs. Check for conflicts before assigning.
+Use the **Agent tool**. Each agent receives:
 
-## Step 5: Spawn 4 Test Engineer Agents IN PARALLEL
+1. The **Shared Rules** and its role section from `test-engineer-prompts.md`
+2. Its area, scenarios and ID range
+3. The production files of the area and the existing test codeunits to extend
+4. The Test Policy
+5. The `/bcquality-citation` protocol against the `testing` domain
 
-Use the **Agent tool** to spawn all 4 engineers simultaneously. Each agent receives:
+**Model: sonnet** for all engineers. Engineers run their own tests with `al-runner` while writing them.
 
-1. Their specific section from `test-engineer-prompts.md`
-2. The full list of implemented AL files (with paths)
-3. Their assigned test scenarios (from Step 3)
-4. Their assigned ID range (from Step 4)
-5. The project's `app.json` context (name, ID range, dependencies)
+## Step 7: Check the Output
 
-**Model: sonnet** for all 4 agents.
+- **No production change**: `git diff --stat` on the production app folder must be empty. If an engineer
+  reports something untestable without changing production code, take it to the user — do not let it
+  slip in as a "small refactor".
+- **No duplicates**: changed behavior updated existing tests; no parallel old/new tests.
+- No ID conflicts; all assigned scenarios covered.
 
-Each agent prompt must include:
-- The test scenarios assigned to them (specific, not vague)
-- The AL files they need to read
-- Their ID range
-- The output path: `.dev/<task-slug>/` for any intermediate files
-- Instruction to write test codeunits to the project's test directory (e.g., `test/` or `src/test/`)
-- The `/bcquality-citation` protocol against the `testing` domain (apply and cite the rules — see `test-engineer-prompts.md` header)
+## Step 8: Run
 
-## Step 6: Monitor Test Development
+1. **Fast loop** — `al-runner` on the app and the test app (see `/run-tests`). Record passed / failed / **not run** (with reasons).
+2. **Reference run** (`full`; optional for `light`) — on BC: online sandbox (VS Code Test Explorer, BC 28+),
+   ALTool in CI, or a container with `bc-test`. It covers the "not run" tests and confirms the rest.
+   If no BC environment is reachable, say so explicitly: those tests are **written but not executed on BC**.
+   Never report them as passing.
 
-After agents complete, verify:
+## Step 9: Iterate on Failures
 
-- **No ID conflicts** — scan all created test codeunits for duplicate IDs
-- **All assigned scenarios covered** — diff assigned vs. implemented
-- **Consistent patterns** — all use `[Test]` attribute, Arrange-Act-Assert, proper naming
-- **No compilation issues** — check for obvious syntax problems
+- **Feature mode**: a failing test is either a wrong test (fix the test) or a real defect in production
+  code. A real defect is **reported to the user** (with the failing scenario) and routed to `/fix` —
+  engineers never patch production code to make a test pass.
+- **Characterize mode**: a failing test is always a wrong test — it must describe current behavior.
+- **al-runner and BC disagree** (passes on one, fails on the other): BC is the reference. Report the
+  discrepancy in the test plan — it may be an `al-runner` limitation (demo data, permissions) or a real
+  environment difference.
 
-If agents asked technical questions (how to mock, which fixtures, which BC objects to use), answer them and re-dispatch.
+Re-run until green, then continue.
 
-## Step 7: Run bc-test on All Test Codeunits
+## Step 10: Adversarial Verification
 
-```bash
-bc-test -o .dev/<task-slug>/test-results.txt
-```
+Mandatory for `full`, optional for `light`. Invoke `/verify-tests` (forked sub-agent, clean context) with:
+- production app path and test app path
+- task slug (output: `.dev/<task-slug>/06-test-verification.md`)
+- `02-solution-plan.md` if it exists
 
-- If **ALL passing** --> proceed to Step 9
-- If **some failing** --> proceed to Step 8
+Dispatch CRITICAL/MAJOR findings back to the owning engineer, re-run tests and the adversary until
+none remain.
 
-Use `--failures-only` flag if you only need to see failures:
-```bash
-bc-test --failures-only -o .dev/<task-slug>/test-results-failures.txt
-```
+## Step 11: Write the Test Plan
 
-## Step 8: Iterate on Failures
-
-For each failing test:
-
-1. **Identify the owner** by test codeunit ID:
-   - 50100–50199 --> Unit Test Engineer
-   - 50200–50299 --> Integration Test Engineer
-   - 50300–50399 --> Scenario Test Engineer
-   - 50400–50499 --> Edge Case Test Engineer
-
-2. **Dispatch fix** to the owning engineer with:
-   - The failure message
-   - The test codeunit file path
-   - The production code it tests
-
-3. **Re-run bc-test** after fixes
-
-4. **Repeat** until ALL tests pass
-
-**Do NOT present to the user until ALL tests pass.**
-
-## Step 8.5: Run Test Adversary (MANDATORY)
-
-Once all tests pass, invoke `/verify-tests`. It runs automatically in a forked sub-agent with clean context (`context: fork`) — no manual agent spawning needed.
-
-Pass as arguments:
-- Path to all production AL files
-- Path to all test AL files
-- Task slug (for output path: `.dev/<task-slug>/06-test-verification.md`)
-- Path to `.dev/<task-slug>/02-solution-plan.md` if it exists
-
-**Wait for the adversary to complete before proceeding.**
-
-### If adversary finds CRITICAL or MAJOR issues:
-
-1. Dispatch fixes to the owning test engineer (by ID range) with the specific finding
-2. Re-run `bc-test` to confirm tests still pass
-3. Re-run the adversary sub-agent (fresh context again)
-4. Repeat until the adversary reports no CRITICAL or MAJOR issues
-
-### If adversary finds only MINOR issues or none:
-
-Proceed to Step 9. Note the adversary verdict in the test plan.
-
-**Do NOT present to the user until the adversary clears the suite.**
-
-## Step 9: Write Test Plan Document
-
-Write `.dev/<task-slug>/05-test-plan.md` as YOUR synthesis (not agent output). Include:
+Write `.dev/<task-slug>/05-test-plan.md` as YOUR synthesis:
 
 ```markdown
 # Test Plan — <Task Name>
 
-## Test Coverage Summary
+**Mode:** Feature / Characterize    **Test Policy:** light / full
 
-| Category | Count | Codeunit IDs |
-|----------|-------|-------------|
-| Unit Tests | X | 50100, 50101, ... |
-| Integration Tests | X | 50200, 50201, ... |
-| Scenario Tests | X | 50300, 50301, ... |
-| Edge Case Tests | X | 50400, 50401, ... |
-| **Total** | **X** | |
+## Coverage by Business Area
+| Area | Entry Points | Tests | Codeunit |
+|------|--------------|-------|----------|
 
-## Test Codeunits Created
+## Changed or Removed Tests
+| Test | Change | Reason |
+|------|--------|--------|
 
-| ID | Name | Category | Scenarios Covered |
-|----|------|----------|------------------|
-| ... | ... | ... | ... |
+## Execution
+- al-runner: X passed / Y failed / Z not run (reasons)
+- BC reference run: X passed / Y total — environment used, or "not executed: no BC environment"
+- Discrepancies al-runner vs BC: ...
 
-## Key Test Scenarios
-
-1. ...
-2. ...
-(5–10 most important scenarios)
-
-## Test Execution Results
-
-- Total tests: X
-- Passed: X
-- Failed: 0
-- Execution time: Xs
-
-## Coverage Analysis
-
-### What's Covered
+## Not Covered (and Why)
 - ...
 
-### What's NOT Covered (and Why)
-- ...
+## To Confirm with the Business (Characterize mode)
+- Behaviors marked `CHARACTERIZATION` that look surprising
+
+## Adversarial Verdict
+- <summary of /verify-tests, or "not run (light)">
 
 ## Standards Applied (BCQuality)
-The `testing`-domain BCQuality rules the suite follows, cited by path — so the user sees which
-best-practices were enforced (e.g. test isolation, meaningful assertions). Note any `custom`-layer
-(DI) rule that took precedence.
+The `testing`-domain BCQuality rules the suite follows, cited by path.
 ```
 
-## Step 10: Present to User
+## Step 12: Present to User
 
 Use **AskUserQuestion** (BLOCKING):
 
-> **Test Suite Complete**
+> **Test Suite Complete** — <mode>
 >
-> Created X test codeunits with Y individual tests.
-> - Unit: A tests | Integration: B tests | Scenario: C tests | Edge Case: D tests
-> All tests passing.
+> <N> business areas · <x> tests
+> al-runner: <results incl. not run> · BC: <results, or not executed>
+> <Characterize mode: N behaviors to confirm>
 >
-> Test plan written to `.dev/<task-slug>/05-test-plan.md`
+> Test plan: `.dev/<task-slug>/05-test-plan.md`
 >
-> **Options:**
-> - **Approve** — Test suite is complete
-> - **Add More Tests** — Specify additional scenarios to cover
-> - **Review Failures** — Re-examine any borderline tests
-> - **Stop** — Halt testing
+> - **Approve** — suite accepted
+> - **Add More Tests** — specify scenarios
+> - **Review Behaviors to Confirm** — walk through the `CHARACTERIZATION` items
+> - **Stop**
 
 ---
 
 ## Key Rules
 
-1. **Assign SPECIFIC scenarios** to each engineer, never just "write tests for X"
-2. **Never present failing tests** to the user — fix them first
-3. **Use bc-test features**: auto-detect from `app.json`, `--failures-only`, `-o` for file output
-4. **All 4 agents run in PARALLEL** — do not run sequentially
-5. **ID ranges must not overlap** — verify before and after agent execution
-6. **One test per behavior** — no multi-assertion mega-tests
-7. **The adversary always runs** — Step 8.5 is not optional. "All tests pass" is not a quality signal on its own.
+1. **Behavior, not internals** — tests go through business entry points and assert on observable results.
+2. **Production code is never reshaped for tests** — no interface, factory or injected setup; BC seams instead.
+3. **Organized by business area** — never by test category or by runner.
+4. **Update, don't duplicate** — a changed requirement changes the existing test.
+5. **BC is the reference; al-runner is the fast loop.** Never report unexecuted tests as passing.
+6. **The adversary runs on `full`** — "all tests pass" is not a quality signal on its own.

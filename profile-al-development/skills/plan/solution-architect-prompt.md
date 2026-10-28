@@ -23,7 +23,7 @@ You will receive:
 - **Starting constraint** — A specific architectural direction to explore (e.g., "table extension approach" or "event-driven approach")
 - **Fit-gap file** (`01b-fit-gap.md`, if provided) — what the standard already covers and the **residual gaps** (G1, G2…) you must design for
 - **Existing objects** carrying the rules involved, and whether the plan runs in **Extension mode**
-- **Extensibility Level** (`PTE` / `Product`) and **Test Policy** (`none` / `pure` / `full`)
+- **Extensibility Level** (`PTE` / `Product`) and **Test Policy** (`none` / `light` / `full`)
 
 Your starting constraint is your philosophical anchor. Design the best possible solution within that constraint. If the constraint leads to a clearly terrible solution, say so — but still present the best version of it.
 
@@ -99,9 +99,9 @@ Design your solution following BC conventions:
 
 Testability comes from simple structure, not from injection (see `rules/al-architecture.md`). State briefly:
 - **Business entry points** that carry the behavior (the targets a test — or a manual acceptance check — exercises).
-- **Pure calculations** worth isolating as functions (testable in memory without mocks).
+- **Pure calculations** worth isolating as functions (readable, testable with values in / result out).
 - **External I/O** (HTTP, files, e-mail) and where it is grouped.
-- Per Test Policy: `none` → 3-5 acceptance scenarios to verify manually; `pure` → the pure calculations to test; `full` → the business scenarios to test on BC plus the pure calculations.
+- Per Test Policy: `none` → 3-5 acceptance scenarios to verify manually; `light` → the critical business rules to test; `full` → the business scenarios to test, per business area.
 
 Do not plan interfaces, factories, injected setup or mocks to enable tests.
 
@@ -164,7 +164,7 @@ Write your solution to the file path specified (or return it in your response if
 1. <First thing to build — usually tables>
 2. <Next thing — usually codeunits with business logic>
 3. <Then pages>
-4. <Then tests — only if Test Policy is `pure` or `full`>
+4. <Then tests — only if Test Policy is `light` or `full`>
 
 ### Assumptions & Risks
 - <Assumption or risk>

@@ -1,81 +1,78 @@
 ---
 name: run-tests
-description: Execute AL test codeunits. Use al-runner for fast pure-logic tests (no BC required). Use bc-test for full integration tests against a running BC instance.
+description: Execute AL test codeunits. al-runner runs the whole test app in memory as the fast loop (no BC required, Base App compiled from source); BC — online sandbox via VS Code / ALTool, or a container via bc-test — is the reference run.
 ---
 
 # /run-tests — Execute AL Tests
 
-## Two Test Runners
+## One Suite, Two Runners
 
-| Tool | When to use | BC required? | Speed |
-|------|------------|-------------|-------|
-| `al-runner` | Pure-logic unit tests (in-memory tables, no pages/HTTP/events) | No | Milliseconds |
-| `bc-test` | Full integration tests against a running BC instance | Yes | Seconds–minutes |
+Tests are written once, the BC way (`Library -` codeunits, handlers, `asserterror`). The same suite runs on:
 
-## al-runner (preferred for unit tests)
+| Runner | Role | BC required? | Speed |
+|--------|------|-------------|-------|
+| `al-runner` | **Fast loop** — after every change, by agents and developers | No | Seconds |
+| BC (sandbox / ALTool / container) | **Reference** — the result that counts before merge or release | Yes | Minutes |
 
-**Full AI agent guide:**
+`al-runner` is a fast approximation, not Business Central. Its own author recommends running the suite
+at least once on a Microsoft-supported environment before shipping. **Never reshape production code or a
+test to make `al-runner` run it** — a test it cannot run is simply confirmed on BC.
+
+## al-runner (fast loop)
+
+**AL Runner v3** (Rust, `aldevtools/BusinessCentral.AL.Runner`) compiles the Microsoft apps (System
+Application, Base Application, test libraries) from source and executes AL in memory. According to its
+documentation it runs table/page/codeunit triggers, posting routines, integration and business events,
+subscribers (including manual binding), `TestPage`, UI handlers, `[HttpClientHandler]`, and the CRONUS
+demo company.
+
+**Install / use** (check `al-runner --help` and the manual at aldev.tools/al-runner for the exact CLI):
 ```bash
-al-runner --guide
+mise use -g github:aldevtools/BusinessCentral.AL.Runner
+al-runner test ./app ./test
 ```
 
-**Basic usage:**
-```bash
-# Run all tests
-al-runner ./src ./test
+**Results** — each test is **passed**, **failed**, or **not run** with a reason (an unsupported feature is
+never silently defaulted). Report the three counts; list "not run" reasons.
 
-# With symbol packages
-al-runner --packages .alpackages ./src ./test
+**Known limits** (check the manual for the current list):
+- Alpha: results may change between builds; part of Microsoft's own tests are still "not run".
+- Demo data differs from Microsoft's test database (empty number series, missing posting setups) —
+  tests that rely on demo data instead of building their own fail here first.
+- All permissions are granted: permission tests are only meaningful on BC.
+- Refused by design: e-mail, OData/SOAP/API endpoints (call the page/codeunit instead), job queue,
+  multi-user locking, multi-company, file dialogs, report rendering (the dataset works).
+- License: Business Source License 1.1 — free for developing and testing BC extensions.
 
-# With stubs for unsupported dependencies
-al-runner --packages .alpackages --stubs ./stubs ./src ./test
+AL Runner **v2** (`dotnet tool MSDyn365BC.AL.Runner`) is frozen. If a project still uses it, its CLI is
+`al-runner --packages .alpackages ./src ./test` with exit codes 0 = passed, 1 = failures,
+2 = runner limitations only, 3 = compilation error.
 
-# Run a single test procedure
-al-runner --run TestMyProcedure ./src ./test
+## BC (reference run)
 
-# With coverage report
-al-runner --coverage ./src ./test
+Pick what the project has, in this order of preference:
 
-# Machine-readable JSON output
-al-runner --output-json ./src ./test
+1. **Online sandbox from VS Code** (BC 28+) — Test Explorer, profile *Publish & Run*; *Coverage (Procedure)*
+   adds per-procedure coverage. Isolation comes from `RequiredTestIsolation` on each test codeunit.
+2. **ALTool** (command line / CI) — compiles, deploys and runs the test project, structured JSON results.
+   Check `altool --help` for the syntax available in your AL tools version.
+3. **Container** — `bc-test` (from bc-linux or bc-tools) after publishing the app then the test app
+   (`/publish`, `/local-bc`); the default for large suites and CI gates per Microsoft.
 
-# JUnit XML for CI
-al-runner --output-junit results.xml ./src ./test
-```
-
-**Exit codes:**
-| Code | Meaning |
-|------|---------|
-| 0 | All tests passed |
-| 1 | Real assertion failures |
-| 2 | Runner limitations only (compilation gaps, missing mocks — not real failures) |
-| 3 | AL compilation error |
-
-Use exit code 2 to distinguish runner gaps from real failures in CI.
-
-**What al-runner supports:** in-memory tables, CRUD, filters, cross-codeunit calls, interfaces, asserterror, JSON types, BLOB/InStream/OutStream, RecordRef/FieldRef, IsolatedStorage, TextBuilder, and more. See `al-runner --guide` for the full list.
-
-**What al-runner does NOT support:** Pages, Reports, XMLports, HTTP calls, event subscribers. Inject these via AL interfaces or use `--stubs`.
-
-## bc-test (full BC integration)
-
-Expects `bc-test` on PATH (from bc-linux or bc-tools).
-
-```bash
-bc-test --help
-```
-
-Use when tests require BC's service tier, events, UI flows, or features not supported by al-runner.
+Never run tests on a production environment.
 
 ## Behavior
 
-1. Determine which runner is appropriate for the test type
-2. Parse `$ARGUMENTS` and pass through to the selected tool
-3. If there's an active task folder (`.dev/<task-slug>/`), capture output to `.dev/<task-slug>/test-results.txt`
+1. Run `al-runner` first; then the BC reference run when requested, when the Test Policy is `full`, or
+   before a merge.
+2. Parse `$ARGUMENTS` and pass them through to the selected runner.
+3. If there is an active task folder (`.dev/<task-slug>/`), capture output to `.dev/<task-slug>/test-results.txt`.
 
 ## Handling Results
 
-- **All passing (al-runner exit 0):** Report pass count. Note "Tests green."
-- **Exit 2 (al-runner):** Runner limitations only. Not a real failure — add stubs or use bc-test for the blocked tests.
-- **Real failures:** List each failed test with codeunit, method name, and error message. Offer to analyze and suggest fixes.
-- **No tests found:** Check that test codeunits use `Subtype = Test` and mark procedures with `[Test]`.
+- **All passing:** report counts per runner. Note "Tests green on al-runner" / "on BC" — never one for the other.
+- **Not run (al-runner):** not a failure; list the reasons. Those tests must pass on BC before claiming the suite is green.
+- **al-runner and BC disagree:** BC is the reference. Report the discrepancy (often demo data or permissions).
+- **BC unreachable:** say the reference run was not executed. Never report those tests as passing.
+- **Real failures:** list each failed test with codeunit, method name, and error message. Offer to analyze.
+- **No tests found:** check that test codeunits use `Subtype = Test` and procedures have `[Test]`.

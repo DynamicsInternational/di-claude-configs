@@ -1,6 +1,6 @@
 ---
 name: verify-tests
-description: Adversarial test verification. Proves AL test suites are meaningful by mutation sweeps, assertion auditing, and coverage gap analysis. Always runs as a sub-agent with clean context — never inline.
+description: Adversarial test verification. Proves AL test suites are meaningful by mutation sweeps (al-mutate through al-runner, plus sampled mutations on BC for what al-runner does not run), assertion auditing, and coverage gap analysis. Always runs as a sub-agent with clean context — never inline.
 context: fork
 ---
 
@@ -21,7 +21,7 @@ You are always invoked as a sub-agent with a clean context. You have no knowledg
 You receive:
 
 - Path to production AL files (e.g., `src/`)
-- Path to test AL files (e.g., `test/` or `src/test/`)
+- Path to the test app (e.g., `test/`), organized by business area
 - Task slug (e.g., `credit-limit-validation`) for output path
 - Optionally: `.dev/<task-slug>/02-solution-plan.md` for coverage gap analysis
 
@@ -36,7 +36,10 @@ al-mutate --help       # verify it's available
 al-mutate --guide      # full AI agent reference
 ```
 
-`al-mutate` uses `al-runner` internally — **no running BC instance required** for mutation testing.
+`al-mutate` uses `al-runner` internally — **no running BC instance required** — Tests that `al-runner`
+reports **not run** cannot kill a mutation there: the business rules they cover are verified by a small
+sample of manual mutations run on BC (Step 5b), or reported as not mutation-verified when no BC
+environment is reachable.
 
 ---
 
@@ -45,10 +48,10 @@ al-mutate --guide      # full AI agent reference
 For mutation testing, `al-mutate` calls `al-runner` internally. For standalone test runs:
 
 ```bash
-al-runner ./src ./test
-al-runner --packages .alpackages ./src ./test
-al-runner --packages .alpackages --stubs ./stubs ./src ./test
+al-runner test ./app ./test
 ```
+
+Reference run on BC: see `/run-tests` (sandbox, ALTool or container).
 
 See `al-runner --guide` for the full reference.
 
@@ -100,7 +103,7 @@ Read ALL production AL files and ALL test AL files.
 
 Use Glob to find:
 - `src/**/*.al` — production code
-- `test/**/*.al` or `src/test/**/*.al` — test codeunits
+- `test/src/**/*.al` — test codeunits
 
 Read each file completely. Build a mental model of:
 
@@ -156,9 +159,16 @@ Read every `[Test]` procedure. For each one, classify the assertion quality:
 
 Flag all WEAK and VACUOUS tests by name with a specific explanation of what they fail to verify.
 
+Also flag, as MAJOR:
+- **Tests on internals** — tests calling local/internal plumbing or asserting how a result is computed instead of the observable business result (they break on refactoring and miss real regressions).
+- **Test-only production code** — interfaces, factories, injected setup or flags in production code that exist only for tests.
+- **Stale duplicates** — two tests asserting contradictory expectations for the same behavior (an old requirement kept next to the new one).
+
 ---
 
 ## Step 5: New Mutation Sweeps
+
+### 5a. Sweep through `al-runner` — `al-mutate`
 
 Delegate to `al-mutate run`:
 
@@ -190,7 +200,20 @@ Read `mutations.json` and `report.md` after the run to populate the mutation res
 | **Assignment swap** | Assign a different field than expected |
 | **Sign flip** | Negate a decimal result (`Amount` → `-Amount`) |
 
-For each manual mutation: apply → run `al-runner ./src ./test` → record result → `git checkout -- <file>` → verify clean.
+For each manual mutation: apply → run the suite with `al-runner` → record result → `git checkout -- <file>` → verify clean.
+
+### 5b. Sampled mutations on BC
+
+For the business rules covered only by tests `al-runner` reports **not run** (and, on `full`, as a final
+confirmation of the sweep). Each mutation needs compile + publish + run, so sample instead of sweeping:
+
+1. Pick **5–10 mutations** on those business rules: validation removal, condition flip on a business decision, wrong field assigned,
+   date or amount shift.
+2. For each: apply → `al-compile` → publish the app → run the area's test codeunit on BC →
+   record CAUGHT / MISSED → `git checkout -- <file>` → verify clean → republish once at the end.
+3. Log them in the mutation log with `"runner": "bc-test"`.
+
+If no BC environment is reachable, skip 5b and state **"not mutation-verified on BC"** for those rules in the verdict.
 
 ---
 
@@ -215,6 +238,11 @@ For each production procedure:
 - Are **boundary values** tested (0, negative, max)?
 
 List uncovered procedures and untested branches explicitly.
+
+Then play the **edge-case adversary**: for each business area, walk the edge-case table of the Coverage
+Checklist (`../test/test-engineer-prompts.md` — boundaries, empty, invalid, errors, rounding, dates,
+volume, concurrency, text) against the production code. For every threshold, `Error`/`TestField`,
+date or amount calculation you find, name the edge case no test exercises and the bug it would hide.
 
 If `.dev/<task-slug>/02-solution-plan.md` was provided, also check whether the test suite covers the scenarios and acceptance criteria in the plan.
 
@@ -243,6 +271,8 @@ Write `.dev/<task-slug>/06-test-verification.md`:
 | New mutations applied | N |
 | New mutations caught | N |
 | New mutations missed | N |
+| Sampled mutations on BC | N caught / N applied — or "not verified: no BC" |
+| Tests on internals / test-only production code | N |
 | Coverage gaps | N procedures uncovered |
 
 ## Replay Results (Run #N)

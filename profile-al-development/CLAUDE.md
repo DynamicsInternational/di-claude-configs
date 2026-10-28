@@ -53,7 +53,7 @@ Classify every user request by complexity, then invoke the matching skill:
 - `/plan` — Competitive solution design (2-3 architects debate)
 - `/develop` — Parallel implementation + 4-specialist review
 - `/fix` — Quick fix (3 tiers: haiku/sonnet/opus)
-- `/test` — Parallel test development (4 engineers)
+- `/test` — Test suite by business area, per Test Policy: behavior tests run fast with al-runner and confirmed on BC; `--characterize` builds a regression safety net on existing code
 - `/document` — Technical documentation generation
 - `/verify-tests` — Adversarial test verification (mutation sweeps, assertion audit)
 - `/translate` — Localize XLIFF files (fr-FR default; other languages if specified); runs at the end of `/develop`

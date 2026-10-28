@@ -306,7 +306,7 @@ codeunit 50100 "CXT Item Import"
 
 What this template shows:
 - The process reads top to bottom in one procedure: checks, setup read inline, main loop, events at the edges.
-- `CreateItem` is extracted because it is a distinct business step; `CalcUnitPrice` because it is a pure calculation (testable in memory, no mock).
+- `CreateItem` is extracted because it is a distinct business step; `CalcUnitPrice` because it is a pure calculation (testable with values only, no mock).
 - Events sit at the process boundary only, without `IsHandled` (no stated replacement use case). On a `PTE` project, keep them only if the process is a major one or they are requested.
 - Summaries say why; the only `<param>` documents a unit the type does not tell.
 

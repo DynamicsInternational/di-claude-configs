@@ -434,7 +434,35 @@ Vérification :
 lethal --version
 ```
 
-Pour s'exécuter sur BC (backend `bcdev`), LethAL a besoin de `bc-dev-mcp`, de l'app `LethAL Control` publiée sur la sandbox ou le conteneur, et d'un `lethal.config.json` par projet (`lethal init`, à ne pas committer : il contient les identifiants). Le backend en mémoire `al-runner-v3` est refusé sous Windows.
+### bc-dev-mcp
+
+Serveur MCP (même auteur que LethAL) par lequel LethAL pilote la sandbox ou le conteneur BC : lancement de l'app de test, découverte des tests, statut du serveur. LethAL le démarre lui-même en local à chaque exécution — aucun service hébergé.
+
+**Rien à installer** : le paquet est publié sur npm (`bc-dev-mcp`), et la valeur générée par `lethal init` dans `lethal.config.json` le télécharge et le lance via Bun :
+
+```json
+"mcpCommand": ["bun", "x", "bc-dev-mcp"]
+```
+
+Pour figer une version précise (la doc LethAL valide le commit `8371d0b`), clonez et compilez le dépôt, puis pointez la clé vers le clone :
+
+```powershell
+git clone https://github.com/SShadowS/bc-dev-mcp C:\Tools\bc-dev-mcp
+cd C:\Tools\bc-dev-mcp
+git checkout 8371d0b
+bun install
+bun run build
+```
+
+```json
+"mcpCommand": ["bun", "run", "C:/Tools/bc-dev-mcp/src/mcp/index.ts"]
+```
+
+`bc-dev-mcp` lit la connexion dans `.vscode/launch.json` du projet et les identifiants dans `BC_DEV_USER` / `BC_DEV_PASSWORD` (section `bcdev.env` du config).
+
+### Configuration par projet
+
+Pour s'exécuter sur BC (backend `bcdev`), LethAL a besoin de `bc-dev-mcp` (ci-dessus), de l'app `LethAL Control` publiée sur la sandbox ou le conteneur, et d'un `lethal.config.json` par projet (`lethal init`, à ne pas committer : il contient les identifiants). Le backend en mémoire `al-runner-v3` est refusé sous Windows.
 
 ---
 

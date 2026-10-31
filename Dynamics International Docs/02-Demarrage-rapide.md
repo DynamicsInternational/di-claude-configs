@@ -72,7 +72,7 @@ commande.
 
 Sans rien demander, le plugin applique en permanence :
 
-- des **règles AL** de fond (architecture, nommage, principes d'ingénierie) — voir le dossier `rules/` ;
+- des **règles AL** de fond (architecture, nommage, principes d'ingénierie) — dossier `rules/`, injectées dans chaque agent par un hook ;
 - les **règles de qualité BCQuality** (officielles Microsoft + standards DI) consultées et **citées**
   à chaque design, génération de code et revue ;
 - une **compilation automatique** en fin de tour (hook) pour détecter les erreurs tout de suite ;

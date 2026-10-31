@@ -27,3 +27,6 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# claude-mem auto-generated folder notes (Claude Code does not load a plugin CLAUDE.md)
+profile-al-development/**/CLAUDE.md

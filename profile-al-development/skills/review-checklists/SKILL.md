@@ -9,7 +9,7 @@ user-invocable: false
 Use these checklists when reviewing output from planning, coding, or testing before presenting results to the user. Every piece of agent output must pass the relevant checklist. If it does not, send it back with specific feedback before the user ever sees it.
 
 These checklists are a **fast index**, not the source of truth. The authoritative best-practice
-corpus is BCQuality (consult and cite via `/bcquality-citation`); the standing `rules/` files are
+corpus is BCQuality (consult and cite via `/bcquality-citation`); the injected AL rules are
 the always-on guardrails. When a checklist item needs depth, an example, or a citation, pull it
 from BCQuality and reference the rule path in the deliverable.
 
@@ -29,7 +29,7 @@ Before presenting a solution plan to the user, verify:
 - [ ] **Addresses all requirements** -- every stated requirement has a corresponding design element
 - [ ] **BC integration is sound** -- uses standard BC patterns (posting routines, event subscribers, standard tables) rather than reinventing platform functionality
 - [ ] **Edge cases identified** -- plan acknowledges boundary conditions, error scenarios, and concurrent usage
-- [ ] **Follows project patterns** -- consistent with existing codebase conventions (naming, architecture, module boundaries), except patterns that contradict `rules/`
+- [ ] **Follows project patterns** -- consistent with existing codebase conventions (naming, architecture, module boundaries), except patterns that contradict the AL rules
 - [ ] **Modifies before adding** -- existing rules touched by the request are changed in place (Reuse & Extension section filled; Extension mode applied when relevant)
 - [ ] **Object IDs specified** -- all new objects have assigned IDs that do not conflict with existing ranges
 - [ ] **No over-engineering** -- plan solves what was asked, not a hypothetical future problem; no relay layers, single-implementation interfaces, factories or events beyond the Extensibility Level
@@ -43,7 +43,7 @@ Before presenting a solution plan to the user, verify:
 Before presenting code to the user, verify:
 
 - [ ] **Matches the plan** -- implementation follows the agreed solution design; deviations are explained
-- [ ] **AL coding standards met** -- PascalCase, namespaces, affix rules, SetLoadFields, FieldCaption errors, DataClassification, ApplicationArea (authoritative source: the `rules/` files for standing guardrails and the BCQuality corpus via `/bcquality-citation` for depth + citations)
+- [ ] **AL coding standards met** -- PascalCase, namespaces, affix rules, SetLoadFields, FieldCaption errors, DataClassification, ApplicationArea (authoritative source: the injected AL rules for standing guardrails and the BCQuality corpus via `/bcquality-citation` for depth + citations)
 - [ ] **Consistent naming** -- identifiers follow the same conventions throughout; no mix of styles
 - [ ] **Compiles cleanly** -- no obvious syntax errors, missing semicolons, undeclared variables, or type mismatches
 - [ ] **Minimal changes** -- only the code necessary to fulfill the requirement; no unrelated refactoring

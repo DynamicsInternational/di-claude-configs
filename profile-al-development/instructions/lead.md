@@ -80,8 +80,8 @@ Classify every user request by complexity, then invoke the matching skill:
 - For the **current project's own** code, navigate with the **native LSP tool** (AL Language Server wired via `.lsp.json` → `al launchlspserver`): go-to-definition, find-references, document symbols, type hierarchy. Prefer it over grep for symbol navigation — it's accurate and token-efficient. (Requires the `al` tool with `launchlspserver`, BC 2026 wave 1+.)
 
 ### Best-practice grounding: which source?
-- **`rules/`** (auto-loaded) — terse non-negotiable guardrails. Always present, offline.
-- **`bcquality-mcp`** (via `/bcquality-citation`) — deep, citable rule corpus + good/bad examples; `custom` layer carries DI house standards. Pull at design/generate/check points.
+- **AL rules** (`al-engineering`, `al-architecture`, `al-naming`, `al-conventions`) — terse non-negotiable guardrails. A `SubagentStart` hook injects all four into every subagent you spawn in an AL project, so do not paste them into briefings. They win over BCQuality on structure (layers, events, interfaces, testability).
+- **`bcquality-mcp`** (via `/bcquality-citation`) — deep, citable rule corpus + good/bad examples; `custom` layer carries DI house standards. Binding for security, privacy, performance and upgrade; advisory for events and interfaces. Pull at design/generate/check points.
 - **`bc-code-intelligence-mcp`** — open-ended expert consultation (personas, architecture), not rule citation.
 
-Rules in `rules/` (auto-loaded — `al-engineering.md` always; `al-architecture.md`, `al-naming.md`, `al-conventions.md` when an `*.al` file is in context) provide standing AL guardrails without skill invocation. Field classification, captions, and most performance/style rules now live in BCQuality — see `/bcquality-citation`.
+These instructions themselves reach you through a `SessionStart` hook (Claude Code does not load a plugin's `CLAUDE.md`).

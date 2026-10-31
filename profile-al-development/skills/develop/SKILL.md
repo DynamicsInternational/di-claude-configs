@@ -11,7 +11,11 @@ You are the engineering manager. You do NOT write code. You orchestrate develope
 
 - Auto-generate a task slug from the requirement (or reuse an existing one if continuing work).
 - Ensure `.dev/<task-slug>/` directory exists. Create it if needed.
-- Record the starting commit (`git rev-parse HEAD`) as the task's base ref — used by the metrics scan (Step 5.5).
+- Record the starting commit (`git rev-parse HEAD`) as the task's base ref, and take the metrics
+  baseline **before any change** (used by the ratchet in Step 5.5):
+  ```bash
+  node "${CLAUDE_PLUGIN_ROOT}/skills/al-metrics/al-metrics.js" <appDir> --json .dev/<task-slug>/00-metrics-baseline.json --md .dev/<task-slug>/00-metrics-baseline.md
+  ```
 
 ## Step 2: Read Solution Plan (REQUIRED)
 
@@ -21,20 +25,25 @@ You are the engineering manager. You do NOT write code. You orchestrate develope
 
 ## Step 3: Partition Work for Parallel Development
 
-Analyze the solution plan and identify independent modules that can be developed in parallel.
+Analyze the solution plan and identify the **business processes** it implements.
+
+A developer who sees only one layer of a process (the table, or the codeunit, or the page) has to
+invent a boundary and a seam to talk to the others — that is how relays, internal events and
+single-implementation interfaces appear. So work is split **by complete business process**, never
+by object type or by file list.
 
 **Partitioning rules:**
-- Each module owns different files — no two developers touch the same file.
-- Clear boundaries between modules with minimal cross-dependencies.
-- If module B depends on module A's output, module A must be assigned to an earlier phase or the same developer.
-- Group tightly coupled objects (e.g., a table and its page) into the same module.
+- One module = one business process end to end: its table fields, codeunit procedures, page actions and subscribers.
+- No two developers touch the same file. If two processes share a file, they go to the same developer.
+- If process B depends on process A's output, A goes to an earlier phase or to the same developer.
 
 **Developer count decision:**
-| Object Count | Developers | Rationale |
+| Scope | Developers | Rationale |
 |---|---|---|
-| 1-3 objects | 1 developer | Overhead of coordination exceeds benefit |
-| 4-8 objects | 2-3 developers | Sweet spot for parallelism |
-| 9+ objects | 3-4 developers | Max parallelism, watch for conflicts |
+| One business process, or ≤ 8 objects | 1 developer | A single author keeps the call chain short and the code coherent |
+| 2+ independent processes, 9+ objects | 1 developer per process, max 3 | Parallelism only where processes do not share files |
+
+When in doubt, use one developer.
 
 Document the partition clearly before spawning agents.
 
@@ -48,7 +57,7 @@ For each developer agent:
 3. Assign their specific module and files from the partition.
 4. Provide the path to the solution plan: `.dev/<task-slug>/02-solution-plan.md`
 5. Provide the path to project context: `.dev/project-context.md`
-6. Reference the standing AL rules in `rules/` and the BCQuality corpus via `/bcquality-citation` (GENERATE mode).
+6. Reference the BCQuality corpus via `/bcquality-citation` (GENERATE mode). The AL rules are injected into every subagent by the plugin's `SubagentStart` hook — do not paste them.
 7. Use model: **opus** for code quality.
 
 **Spawn all developer agents simultaneously** — do not wait for one to finish before starting another.
@@ -61,18 +70,26 @@ As developer agents work:
 - **Naming consistency:** Verify that naming conventions are consistent across all developers (prefixes, affixes, casing).
 - **Object ID usage:** Verify no duplicate object IDs across developers. Each developer should use IDs from their assigned range.
 
-## Step 5.5: Structure Metrics (informative)
+## Step 5.5: Structure Metrics — Ratchet (blocking)
 
-Run the `/al-metrics` scan on the app, scoped to what this task changed:
+Run the `/al-metrics` scan on the app, scoped to what this task changed, against the baseline taken in Step 1:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/al-metrics/al-metrics.js" <appDir> --changed <base-ref> \
+  --ratchet .dev/<task-slug>/00-metrics-baseline.json \
   --json .dev/<task-slug>/04-metrics.json --md .dev/<task-slug>/04-metrics.md
 ```
 
-Never blocking. Hand `04-metrics.md` to the AL Expert reviewer: relays, deep chains, events without
-subscriber (PTE), dead code and single-implementation interfaces in the changed files are leads for its
-subtractive review — confirmed or dismissed there, not fixed automatically.
+**The ratchet**: a task may not make structure worse in the files it touches. Exit code `3` means a
+changed file gained a relay, depth, an event without subscriber (PTE), dead code, a single-implementation
+interface, a Boolean-heavy signature or a `SingleInstance` codeunit — listed under "Ratchet" in `04-metrics.md`.
+- Send each regression back to the developer who owns the file: remove it, or state why it is needed.
+- A regression is kept only with a stated reason (e.g. an event at a business boundary requested by
+  the plan) — recorded in `03-code-review.md` → Structure Metrics, and shown to the user in Step 10.
+- Do not present the work (Step 10) while an unexplained regression remains.
+
+Also hand `04-metrics.md` to the AL Expert reviewer: the remaining leads (relays, deep chains, events
+without subscriber, dead code) are inputs to its subtractive review.
 
 ## Step 6: Spawn 4 Reviewer Agents IN PARALLEL
 
@@ -91,7 +108,7 @@ When all development is complete:
    - The solution plan for context
    - `.dev/project-context.md` (Test Policy, Extensibility Level, Business Rules Map)
    - AL Expert only: `.dev/<task-slug>/04-metrics.md` (Step 5.5)
-   - The shared BCQuality CHECK-mode protocol (cite every finding by rule path — see `reviewer-prompts.md` header)
+   - The shared BCQuality CHECK-mode protocol (`add`/`remove` findings, citation for `add` only — see `reviewer-prompts.md` header)
 5. Use model: **sonnet** for all reviewers.
 
 **Spawn all 4 reviewers simultaneously.**
@@ -101,18 +118,25 @@ When all development is complete:
 When all reviewers complete:
 
 1. **Collect** all findings from all 4 reviewers.
-2. **Categorize** each finding:
+2. **Weigh additions against removals.** Three reviewers lean toward asking for more; the review
+   must not grow the code by default:
+   - An `add` finding without a BCQuality reference or a concrete failure scenario is MINOR at most.
+   - When an `add` finding and a `remove` finding conflict (e.g. "add an event here" vs "this event
+     has no consumer"), the removal wins unless the addition is CRITICAL or binding (security,
+     privacy, performance, upgrade).
+   - An `add` finding is fixed by modifying existing code first, not by a new layer.
+3. **Categorize** each finding:
    - **CRITICAL** — Must fix. Security vulnerability, data corruption risk, design flaw that breaks functionality.
    - **HIGH** — Should fix. Performance issue, DRY violation or duplicated business rule, over-abstraction (pass-through, deep call chain, speculative interface/event), parallel variant instead of in-place change, wrong comment, missing error handling, poor pattern usage.
    - **MINOR** — Nice to have. Documentation gaps, naming style preferences, minor readability improvements.
-3. **If CRITICAL issues exist:**
+4. **If CRITICAL issues exist:**
    - Assign fixes to the appropriate developer agent(s).
    - After fixes, re-run the relevant reviewer(s) to verify.
    - Iterate until no CRITICAL issues remain.
    - Do NOT present to the user until critical issues are resolved.
-4. **If only HIGH/MINOR issues remain:**
+5. **If only HIGH/MINOR issues remain:**
    - Document them for user decision.
-5. Use the feedback resolution protocol from `feedback-resolution.md` to disposition all findings.
+6. Use the feedback resolution protocol from `feedback-resolution.md` to disposition all findings.
 
 ## Step 8: Write Code Review Report
 
@@ -132,18 +156,18 @@ Write `.dev/<task-slug>/03-code-review.md` with YOUR synthesis (not a copy-paste
 - Reviewers: Security, AL Expert, Performance, Test Coverage
 
 ## Critical Issues Found and Fixed
-| # | Issue | Reviewer | Fix Applied | BCQuality Ref |
-|---|-------|----------|-------------|---------------|
-| 1 | ... | ... | ... | <rule path or n/a> |
+| # | Issue | Kind | Reviewer | Fix Applied | BCQuality Ref |
+|---|-------|------|----------|-------------|---------------|
+| 1 | ... | add/remove | ... | ... | <rule path, AL rule, or opinion> |
 
 ## Issues for User Decision
-| # | Issue | Severity | Reviewer | Recommendation | BCQuality Ref |
-|---|-------|----------|----------|----------------|---------------|
-| 1 | ... | HIGH/MINOR | ... | ... | <rule path or n/a> |
+| # | Issue | Kind | Severity | Reviewer | Recommendation | BCQuality Ref |
+|---|-------|------|----------|----------|----------------|---------------|
+| 1 | ... | add/remove | HIGH/MINOR | ... | ... | <rule path, AL rule, or opinion> |
 
 ## Structure Metrics
 Key figures from `04-metrics.md` for the changed files (max depth, relays, events without subscriber,
-dead code) and what the AL Expert concluded about each lead. Informative.
+dead code), the ratchet result against `00-metrics-baseline.json`, each kept regression with its reason, and what the AL Expert concluded about each lead.
 
 ## Manual Acceptance Checklist
 From the Test Coverage reviewer — always present when Test Policy is `none`, otherwise only for
@@ -190,6 +214,7 @@ Use **AskUserQuestion** to present the results:
 > **Objects created:** <count>
 > **Review status:** <All clear / N issues for your decision>
 > **Compilation:** <Clean / Issues>
+> **Structure ratchet:** <No regression / N kept regressions, with reasons>
 > **Localization:** <fr-FR translated / skipped (no UI text)>
 >
 > <If issues for decision, list them briefly>

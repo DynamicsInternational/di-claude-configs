@@ -97,7 +97,7 @@ Assign the other architect(s) different starting constraints such as:
 
 The specific constraints depend on the problem. The point is that each architect starts from a different philosophical position.
 Never assign a constraint that asks for interfaces, dependency injection or mocks for testability
-— testability comes from simple structure (see `rules/al-architecture.md`).
+— testability comes from simple structure (see the `al-architecture` rule → Testable Without Overhead).
 
 ### Step 6: Facilitate Debate
 
@@ -125,9 +125,20 @@ Challenge weak points yourself. You do not need to spawn agents for this — app
   implementation, a factory, an event our own app subscribes to? → cut the layer.
 - Are the published events within the declared Extensibility Level, at business boundaries? → cut the others.
 
-### Step 7: Synthesize Winning Approach
+### Step 7: Synthesize — Start From the Smallest Design
 
-Pick the winning approach or create a hybrid. **This is YOUR decision, not the user's.** You are the engineering manager. Consider:
+**This is YOUR decision, not the user's.** You are the engineering manager.
+
+Synthesis is **subtractive, not a union** of the proposals:
+1. Take the **smallest design that covers every residual gap** (fewest objects, shortest call
+   chains, fewest published events and interfaces) — usually the standard-first or extend-in-place
+   proposal — as the base.
+2. Import an element from another proposal **only** if it covers a gap the base misses, or removes a
+   concrete, stated risk (upgrade, performance, security, data integrity). Record each import with its
+   gap ID or risk in the plan. "More robust", "more extensible" or "cleaner separation" are not reasons.
+3. Never merge two mechanisms for the same need (e.g. an event and an interface for one variation point).
+
+Then check the result against:
 - BC-native patterns and conventions
 - Readability and ease of change — a developer must follow each business action without jumping through layers; the next brick must slot in by modifying, not stacking
 - Upgrade safety (will this survive BC major version updates?)
@@ -172,6 +183,6 @@ Present the solution summary to the user using AskUserQuestion with these option
 - **Modify before adding.** When the gap touches an existing feature, changing its code in place is the default; a new layer next to it needs a stated reason.
 - **Assign DIFFERENT starting points** to prevent architects from converging on the same solution. The whole point is competitive design.
 - **Challenge weak points yourself.** Do not just pick the longest or most detailed plan. Look for the one that best fits BC patterns and the specific requirements.
-- **Synthesize, don't copy.** Your solution plan should be better than any individual architect's output because it combines the best ideas from all of them.
+- **Synthesize from the minimum.** Your plan should be better than any individual architect's output because it is the smallest design that covers the gaps — not because it combines everything each of them proposed.
 - **Follow proportional planning.** A 3-file change does not need a 500-line plan. Read `proportional-planning.md` and enforce it.
 - **Agent output is working material.** Architects write to temporary files if needed. Only your final `02-solution-plan.md` is the deliverable.

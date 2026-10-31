@@ -1,6 +1,33 @@
 {
-  "description": "AL development hooks — compile on turn end",
+  "description": "AL development hooks — inject lead instructions and AL rules, compile on turn end",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/al-hook-context.js\" SessionStart instructions/lead.md",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/al-hook-context.js\" SubagentStart rules/al-engineering.md rules/al-naming.md",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/al-hook-context.js\" SubagentStart rules/al-architecture.md rules/al-conventions.md",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",

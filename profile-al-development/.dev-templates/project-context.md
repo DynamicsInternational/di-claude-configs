@@ -24,7 +24,7 @@
 - `light`: test app with tests on the critical business rules, run with `al-runner` (no BC test environment required).
 - `full`: test app covering every business area touched, run with `al-runner` for the fast loop and on BC (sandbox, ALTool/CI or container) as the reference; adversarial verification; characterization before refactors.
 
-Whatever the policy, code is written the same way: readable and testable without overhead (see `rules/al-architecture.md`).
+Whatever the policy, code is written the same way: readable and testable without overhead (see the `al-architecture` rule).
 
 ## Directory Structure
 

@@ -1,6 +1,7 @@
 ---
 description: AL naming conventions, namespaces, and affix rules
-globs: ["**/*.al"]
+paths:
+  - "**/*.al"
 ---
 
 # AL Naming Rules

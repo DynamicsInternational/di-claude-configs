@@ -72,16 +72,20 @@ Follow the `/bcquality-citation` protocol in **DESIGN** mode. Make one scoped ca
 bcquality_get_applicable_for_context  { goal: "<the feature goal>", bcVersion: <from app.json> }
 ```
 
-Treat the returned rules as **binding design constraints** (the `custom` layer carries Dynamics
-International house standards and overrides Microsoft/community). Cite the rule paths in the
-"BC Integration" and "Alternatives Considered" sections of your output via a `references:` list.
-A design choice that contradicts a `custom`-layer rule must be justified explicitly or dropped.
+Apply the returned rules per their **binding status** (see "Binding status by domain" in
+`/bcquality-citation`): `security`, `privacy`, `performance`, `upgrade` and `breaking-changes`
+rules are binding design constraints; `events` and `interfaces` rules are advisory — they apply only
+within the project's Extensibility Level and never justify, on their own, an interface, an event or
+an `IsHandled` that the AL rules would not add. The `custom` layer carries Dynamics International
+house standards and overrides Microsoft/community. Cite the rule paths in the "BC Integration" and
+"Alternatives Considered" sections of your output via a `references:` list. A design choice that
+contradicts a binding or `custom`-layer rule must be justified explicitly or dropped.
 
 ### 4. Explore Codebase
 
 Only explore areas NOT already covered by project context. Look for:
 - **Where the business rules you touch already live** (Business Rules Map, then search). Your design modifies them in place rather than writing a variant.
-- Similar patterns already implemented — follow them for consistency **unless they contradict `rules/`** (pass-through procedures, speculative events or interfaces are not patterns to extend)
+- Similar patterns already implemented — follow them for consistency **unless they contradict the AL rules** (pass-through procedures, speculative events or interfaces are not patterns to extend)
 - Existing helper codeunits or utility functions to reuse
 - Potential conflicts with existing code
 
@@ -97,7 +101,7 @@ Design your solution following BC conventions:
 
 ### 6. Define the Test Approach (per Test Policy)
 
-Testability comes from simple structure, not from injection (see `rules/al-architecture.md`). State briefly:
+Testability comes from simple structure, not from injection (see the `al-architecture` rule). State briefly:
 - **Business entry points** that carry the behavior (the targets a test — or a manual acceptance check — exercises).
 - **Pure calculations** worth isolating as functions (readable, testable with values in / result out).
 - **External I/O** (HTTP, files, e-mail) and where it is grouped.

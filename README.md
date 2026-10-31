@@ -19,11 +19,11 @@ claude-configs/
 ├── profile-al-development/    # AL (Business Central) development profile
 │   ├── .claude-plugin/
 │   │   └── plugin.json        # Plugin metadata
-│   ├── CLAUDE.md              # Lead-as-Manager profile instructions
+│   ├── instructions/lead.md   # Lead-as-Manager instructions (injected by hook)
 │   ├── skills/                # Model-invoked skills for AL (/-prefixed)
 │   ├── agents/                # Custom subagents for AL
-│   ├── rules/                 # Auto-loaded AL guardrails
-│   ├── hooks/                 # Auto-compile hooks
+│   ├── rules/                 # AL guardrails (injected by hook)
+│   ├── hooks/                 # Instruction injection + auto-compile hooks
 │   └── .mcp.json              # AL MCP server configuration
 ├── .gitignore
 └── README.md (this file)
@@ -168,10 +168,11 @@ To create a new plugin profile:
    ```
 
 3. **Add configuration files:**
-   - `CLAUDE.md` - Memory/instructions
+   - Instructions for Claude go in skills, or are injected by a `SessionStart` / `SubagentStart`
+     hook — Claude Code does **not** load a plugin's `CLAUDE.md` or `rules/` directory
    - `skills/<skill-name>/SKILL.md` - Model-invoked skills
    - `agents/*.md` - Custom subagents
-   - `rules/*.md` - Auto-loaded guardrails (optional)
+   - `rules/*.md` - Guardrails, injected by a hook (optional)
    - `.mcp.json` - MCP server configuration (optional)
 
 4. **Register and document:**

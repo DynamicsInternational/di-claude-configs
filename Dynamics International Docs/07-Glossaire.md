@@ -14,7 +14,7 @@ Les termes que vous croiserez, expliqués simplement.
 | **`.dev/`** | Le dossier où les agents écrivent leurs livrables (besoin, plan, revue, tests…). Garde la conversation propre et laisse une trace. |
 | **`project-context.md`** | La mémoire partagée du projet (plages d'ID, préfixe, dépendances, conventions). Créée par `/init-context`. |
 | **Porte d'approbation** | Un arrêt où le manager vous demande de valider avant de continuer (après le plan, après la revue…). |
-| **Règle (`rules/`)** | Un garde-fou AL **toujours actif**, injecté automatiquement (nommage, architecture, principes). |
+| **Règle (`rules/`)** | Un garde-fou AL **toujours actif**, injecté dans chaque agent par un hook `SubagentStart` (nommage, architecture, principes). |
 | **Hook** | Une action automatique déclenchée par un évènement. Ici : compilation automatique en fin de tour. |
 | **LSP (serveur de langage)** | Un service qui comprend le langage AL (types, portées, références) et répond à des questions précises (« où est appelée cette procédure ? »). Plus fiable qu'une recherche texte. |
 | **BCQuality** | Le corpus de **règles de qualité** AL (Microsoft + community + couche **custom** DI), interrogé via le serveur `bcquality-mcp`. |

@@ -1,25 +1,48 @@
 # AL Development Profile — Lead-as-Manager
 
-**Version:** 5.5.0
+**Version:** 5.6.0
 
-Claude Code profile for Microsoft Dynamics 365 Business Central AL development. The main session acts as an **engineering manager** that orchestrates specialist teammate agents — it never writes code itself. Work is parallelized across agent teams, documented to files, and gated by user approval.
+Claude Code profile for Microsoft Dynamics 365 Business Central AL development. The main session acts as an **engineering manager** that orchestrates specialist subagents — it never writes code itself. Work is parallelized across subagents, documented to files, and gated by user approval.
 
 ## Overview
 
-This profile implements a **Lead-as-Manager** workflow backed by **skills** (model-invoked, prefixed with `/`), standing **rules** (auto-loaded AL guardrails), and **hooks** (auto-compile). Output is document-driven: agents write detailed results to `.dev/<task-slug>/`, returning only concise summaries to keep the main conversation clean.
+This profile implements a **Lead-as-Manager** workflow backed by **skills** (model-invoked, prefixed with `/`), standing **rules** (AL guardrails injected by hook), and **hooks** (instruction injection, auto-compile). Output is document-driven: agents write detailed results to `.dev/<task-slug>/`, returning only concise summaries to keep the main conversation clean.
 
 ## Key Features
 
-- **Lead-as-Manager orchestration** — Main session spawns specialist teammates for parallel work
+- **Lead-as-Manager orchestration** — Main session spawns specialist subagents for parallel work
 - **Competitive solution design** — 2-3 architect agents debate approaches, the lead synthesizes
 - **Parallel implementation** — N developer agents work different modules concurrently
 - **Parallel review** — 4 specialists (security, AL expert with subtractive simplicity review, performance, test & regression)
 - **Test development by business area** — behavior tests built with the BC test libraries, run fast with al-runner and confirmed on BC (sandbox, ALTool or container), per Test Policy; characterization mode for existing code
 - **Smart complexity routing** — TRIVIAL / SIMPLE / MEDIUM / COMPLEX → matching skill
 - **Project memory** — `.dev/project-context.md` cuts 40-60% off workflow runtime
-- **Standing AL rules** — Readability-first engineering, architecture, naming, conventions auto-loaded
+- **Standing AL rules** — Readability-first engineering, architecture, naming, conventions injected into every subagent
 - **Development policies** — per-project Extensibility Level (PTE/Product) and Test Policy (none/light/full), plus a Business Rules Map so each increment modifies the rule where it lives
 - **MCP integration** — BC Code Intelligence, Microsoft Docs, AL Dependency, ALCOPS
+
+## What changed in 5.6.0 — rules actually loaded, subtractive orchestration
+
+Follow-up of the 30/10/2026 audit. Claude Code does not load a plugin's `CLAUDE.md` or `rules/`
+directory, and reads only `agent`/`subagentStatusLine` from a plugin `settings.json` — so the lead
+persona and the 5.4.0 rules were probably never reaching the agents.
+
+- **Instruction injection** — `hooks/al-hook-context.js`: a `SessionStart` hook injects
+  `instructions/lead.md` (formerly `CLAUDE.md`) into the main session, a `SubagentStart` hook injects
+  the four AL rules into every subagent (except `Explore`). Only in an AL project (`app.json` in the
+  folder or one level below, or `.dev/project-context.md`). Rule frontmatter uses `paths:` so the files
+  can also be copied into a project's `.claude/rules/`.
+- **BCQuality by domain** — binding for security, privacy, performance, upgrade, breaking-changes;
+  advisory for events and interfaces (filtered by Extensibility Level); the AL rules win on structure.
+  Citation required only for findings that add or modify (`Kind: add`), not for removals.
+- **Subtractive orchestration** — `/plan` synthesizes from the smallest design that covers the gaps
+  (no union of proposals); `/develop` splits work by complete business process (one developer up to
+  8 objects); removals win over unreferenced additions in the review.
+- **`/al-metrics` ratchet** — `--ratchet <baseline>`: `/develop` takes a baseline before any change and
+  blocks when a touched file gets worse, unless the regression is explained to the user.
+- **Cleanup** — removed `.claude-plugin/settings.json` (ignored keys; agent teams were not used by any
+  skill), root duplicates `proportional-planning.md` / `feedback-resolution.md`, unreferenced
+  `task-coordination.md` / `workflow-routing.md`, claude-mem `CLAUDE.md` residues.
 
 ## What changed in 5.5.0 — LethAL mutation testing, structure metrics
 
@@ -136,16 +159,19 @@ This profile ships **one** standalone agent; the workflow specialists (architect
 
 - **al-repo-summarizer** — Summarizes an AL repository's structure and purpose without reading every file
 
-## Standing Rules (auto-loaded)
+## Standing Rules (injected by hook)
 
-Files in `rules/` provide AL guardrails without any skill invocation:
+Claude Code does not auto-load a plugin's `rules/` directory. The files in `rules/` reach the agents
+through `hooks/al-hook-context.js`, only in an AL project:
 
-| Rule | Loaded when |
-|------|-------------|
-| `al-engineering.md` | Always |
-| `al-architecture.md` | An `*.al` file is in context |
-| `al-naming.md` | An `*.al` file is in context |
-| `al-conventions.md` | An `*.al` file is in context |
+| Content | Injected into | Hook |
+|---------|---------------|------|
+| `instructions/lead.md` (Lead-as-Manager persona, routing) | Main session | `SessionStart` |
+| `al-engineering.md` + `al-naming.md` | Every subagent except `Explore` | `SubagentStart` |
+| `al-architecture.md` + `al-conventions.md` | Every subagent except `Explore` | `SubagentStart` |
+
+Each injected block stays under Claude Code's 10,000-character `additionalContext` cap — keep it so
+when editing a rule (the hook warns on stderr otherwise).
 
 Field classification, captions, and most performance/style rules are deferred to the BCQuality
 corpus (consulted on demand via `/bcquality-citation`) rather than duplicated as static rules.
@@ -222,22 +248,21 @@ profile-al-development/
 │   └── plugin.json           # Plugin metadata
 ├── .mcp.json                 # MCP server configuration (7 servers)
 ├── .lsp.json                 # Native AL Language Server config (al launchlspserver)
-├── CLAUDE.md                 # Lead-as-Manager profile instructions
+├── instructions/
+│   └── lead.md               # Lead-as-Manager instructions (injected by SessionStart hook)
 ├── README.md                 # This file
 ├── agents/
 │   └── al-repo-summarizer.md # Standalone repo-summary agent
 ├── skills/                   # model-invoked skills (see above)
-├── rules/                    # 4 auto-loaded AL rule files
-├── hooks/                    # hooks.json + al-hook-record.js + al-hook-compile.js
-├── .dev-templates/
-│   └── project-context.md    # Template for /init-context
-└── *.md                      # Shared reference docs (workflow-routing,
-                              #   proportional-planning, task-coordination, feedback-resolution)
+├── rules/                    # 4 AL rule files (injected by SubagentStart hook)
+├── hooks/                    # hooks.json + al-hook-context.js + al-hook-record.js + al-hook-compile.js
+└── .dev-templates/
+    └── project-context.md    # Template for /init-context
 ```
 
 ## AL Coding Standards
 
-Enforced via the `rules/` files (see `CLAUDE.md` and the rule files for the complete set):
+Enforced via the `rules/` files (see the rule files for the complete set):
 
 - **PascalCase** naming with object affixes
 - **Table extensions** over base modifications
@@ -298,6 +323,6 @@ On other computers: `git pull`.
 
 ---
 
-**Lead-as-Manager AL development with parallel agent teams and a document-driven workflow.**
+**Lead-as-Manager AL development with parallel subagents and a document-driven workflow.**
 </content>
 </invoke>

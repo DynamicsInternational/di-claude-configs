@@ -27,20 +27,18 @@ claude-configs/
 │   ├── .claude-plugin/
 │   │   └── plugin.json              # Plugin metadata (name, version, author, agents)
 │   ├── .mcp.json                    # MCP server configuration (4 servers)
-│   ├── CLAUDE.md                    # Lead-as-Manager profile instructions
+│   ├── instructions/lead.md         # Lead-as-Manager instructions (SessionStart hook)
 │   ├── agents/                      # Standalone agents
 │   │   └── al-repo-summarizer.md    # (workflow specialists are spawned by skills)
 │   ├── skills/                      # model-invoked skills (/-prefixed)
 │   │   ├── init-context/  interview/  fit-gap/  plan/  develop/  fix/  test/  document/
 │   │   ├── compile/  publish/  run-tests/  local-bc/  al-symbols/  al-mutate/  al-metrics/
 │   │   └── build-tools/  review-checklists/  bc-source/  verify-tests/
-│   ├── rules/                       # 5 auto-loaded AL guardrail files
-│   │   ├── al-engineering.md        # Always loaded
-│   │   ├── al-architecture.md  al-naming.md  al-conventions.md
-│   ├── hooks/                       # hooks.json + al-hook-record.js + al-hook-compile.js
+│   ├── rules/                       # 4 AL guardrail files (SubagentStart hook)
+│   │   ├── al-engineering.md  al-naming.md
+│   │   ├── al-architecture.md  al-conventions.md
+│   ├── hooks/                       # hooks.json + al-hook-context.js + al-hook-record.js + al-hook-compile.js
 │   ├── .dev-templates/              # Template for /init-context
-│   ├── *.md                         # Shared reference docs (workflow-routing,
-│   │                                #   proportional-planning, task-coordination, feedback-resolution)
 │   └── README.md                    # Profile documentation
 ├── .gitignore
 └── README.md                        # Repository overview and setup
@@ -60,7 +58,7 @@ The AL profile implements a document-driven workflow where:
 ### Lead-as-Manager Pattern
 
 The main session is an **engineering manager** — it never writes code itself. Each skill
-spawns specialist teammate agents (often in parallel) and synthesizes their output:
+spawns specialist subagents (often in parallel) and synthesizes their output:
 
 ```
 User Request
@@ -134,10 +132,10 @@ cat > profile-name/.claude-plugin/plugin.json <<EOF
 EOF
 
 # Add configuration files
-# - profile-name/CLAUDE.md
+# - profile-name/instructions/*.md (injected by a SessionStart hook — a plugin CLAUDE.md is not loaded)
 # - profile-name/skills/<skill-name>/SKILL.md
 # - profile-name/agents/*.md
-# - profile-name/rules/*.md (optional auto-loaded guardrails)
+# - profile-name/rules/*.md (optional guardrails — injected by a hook, never auto-loaded)
 # - profile-name/.mcp.json (if needed)
 
 # Register the new plugin in .claude-plugin/marketplace.json
@@ -152,7 +150,7 @@ git push
 ```bash
 cd ~/claude-configs
 
-# Edit files (e.g., profile-al-development/CLAUDE.md)
+# Edit files (e.g., profile-al-development/instructions/lead.md)
 # Make improvements to agents, skills, rules, or instructions
 
 git add profile-al-development/
@@ -235,7 +233,7 @@ Claude Code loads configurations in this order (later overrides earlier):
 
 - **Skills**: `skills/skill-name/SKILL.md` (kebab-case directory)
 - **Agents**: `agents/agent-name.md` (kebab-case)
-- **Rules**: `rules/al-*.md` (kebab-case, auto-loaded)
+- **Rules**: `rules/al-*.md` (kebab-case, injected by `hooks/al-hook-context.js`)
 - **Config**: `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.mcp.json`
 - **Documentation**: `CLAUDE.md` (uppercase), `README.md`
 
@@ -308,7 +306,7 @@ If Critical/Serious issues → ITERATE back to developer agent(s)
 If Minor issues → continue to compile/diagnostics
 ```
 
-See the `feedback-resolution.md` reference doc for severity levels and exit conditions.
+See `skills/develop/feedback-resolution.md` for severity levels and exit conditions.
 
 ### AL Compilation
 

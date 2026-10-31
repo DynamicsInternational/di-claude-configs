@@ -198,7 +198,7 @@ are listed with every location and marked **duplicated**.
 - If this file is more than 7 days old, suggest running init-context to refresh it.
 - Object IDs in the registry are authoritative — use the next available ID when creating new objects.
 - Follow the architectural patterns documented above; do not invent new patterns without explicit approval.
-  Patterns that contradict `rules/` (pass-through procedures, speculative events or interfaces) are not to be copied.
+  Patterns that contradict the AL rules (pass-through procedures, speculative events or interfaces) are not to be copied.
 - Before adding logic, check the Business Rules Map: change the owning procedure instead of writing a variant. Update the map when a rule is added, moved or removed.
 - Check Base App Integration Points before modifying extension objects.
 ```

@@ -21,7 +21,7 @@ The goal is to write a test that fails for the RIGHT reason (missing logic, not 
 1. **Write the test codeunit** following the spec and assigned test scenarios. The test exercises **business behavior through a business entry point**:
    - a business flow → BC test with `Library -` codeunits, asserting on the resulting data;
    - a pure calculation → in-memory test calling the function with values.
-   No mock repositories, no interfaces or injected setup added for the test — control the context with test data, setup records, `WorkDate()`, handlers or manually bound subscribers (see `rules/al-architecture.md`).
+   No mock repositories, no interfaces or injected setup added for the test — control the context with test data, setup records, `WorkDate()`, handlers or manually bound subscribers (see the `al-architecture` rule).
 2. **Changing an existing behavior?** Do not add a parallel test. Update the expectation of the existing test so it now fails, and skip the stub step — the existing code is the RED baseline.
 3. **New behavior:** create MINIMAL production code stubs — enough to compile, but NO actual logic
    - Procedures return default values (0, '', false)
@@ -91,7 +91,7 @@ The goal is to improve code quality WITHOUT changing behavior. All tests must co
 
 ### Steps
 
-1. **Refactor production code** toward readability (see `rules/al-engineering.md`):
+1. **Refactor production code** toward readability (see the `al-engineering` rule):
    - Inline pass-through procedures; extract only distinct business steps or pure calculations
    - Remove duplication and dead code; flatten nesting with early exits
    - Improve variable and procedure names

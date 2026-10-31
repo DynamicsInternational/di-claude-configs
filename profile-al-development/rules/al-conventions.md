@@ -1,6 +1,7 @@
 ---
 description: AL field, page, and documentation conventions
-globs: ["**/*.al"]
+paths:
+  - "**/*.al"
 ---
 
 # AL Conventions

@@ -1,6 +1,7 @@
 ---
 description: AL object architecture, extensibility and testability rules
-globs: ["**/*.al"]
+paths:
+  - "**/*.al"
 ---
 
 # AL Architecture Rules

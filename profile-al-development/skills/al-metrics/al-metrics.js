@@ -5,6 +5,7 @@
 //
 // Usage: node al-metrics.js <appDir> [--level pte|product] [--changed <git-ref>]
 //                           [--json <file>] [--md <file>] [--baseline <metrics.json>]
+//                           [--ratchet <metrics.json>]   exit 3 when a changed file got worse than in that baseline
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -22,12 +23,14 @@ const TRIGGER_RE = /^\s*trigger\s+("[^"]+"|\w+)\s*\(/i;
 const VAR_DECL_RE = /("[^"]+"|\w+)\s*:\s*(?:temporary\s+)?(Codeunit|Record|Page|Report|Interface)\s+("[^"]+"|\w+)/gi;
 const CALL_RE = /(?:("[^"]+"|\w+)\s*\.\s*)?("[^"]+"|\w+)\s*\(/g;
 const HISTORY_RE = /(\b(ADO|DevOps|US|PBI|Bug|Task|Ticket|Jira)\s*[-#:]?\s*\d{3,}|#\d{3,}|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b|\b(ajout|modif(ication)?|added|modified|changed)\s+(le|on|by|par)\b)/i;
+// Per-file counts the ratchet refuses to see grow in a changed file.
+const RATCHET_KEYS = ['maxDepth', 'relays', 'eventsWithoutSubscriber', 'dead', 'singleImplementationInterfaces', 'manyBooleans', 'singleInstance'];
 const NOT_CALLS = new Set(['if', 'while', 'until', 'exit', 'case', 'for', 'with', 'not', 'and', 'or', 'xor', 'begin', 'then', 'else', 'of', 'do', 'repeat']);
 
 const unq = s => (s || '').replace(/^"|"$/g, '').trim().toLowerCase();
 
 function parseArgs(argv) {
-  const a = { appDir: null, level: null, changed: null, json: null, md: null, baseline: null };
+  const a = { appDir: null, level: null, changed: null, json: null, md: null, baseline: null, ratchet: null };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     if (k === '--level') a.level = argv[++i];
@@ -35,9 +38,10 @@ function parseArgs(argv) {
     else if (k === '--json') a.json = argv[++i];
     else if (k === '--md') a.md = argv[++i];
     else if (k === '--baseline') a.baseline = argv[++i];
+    else if (k === '--ratchet') a.ratchet = argv[++i];
     else if (!a.appDir) a.appDir = k;
   }
-  if (!a.appDir) { console.error('Usage: node al-metrics.js <appDir> [--level pte|product] [--changed <git-ref>] [--json f] [--md f] [--baseline f]'); process.exit(2); }
+  if (!a.appDir) { console.error('Usage: node al-metrics.js <appDir> [--level pte|product] [--changed <git-ref>] [--json f] [--md f] [--baseline f] [--ratchet f]'); process.exit(2); }
   return a;
 }
 
@@ -267,6 +271,20 @@ function analyze(app, opts) {
   const c = app.comments;
   const commentRatio = c.commentLines / Math.max(1, c.commentLines + c.codeLines);
 
+  // Per-file counts: what the ratchet compares between a baseline and the current scan.
+  const perFile = {};
+  const bump = (file, k, n = 1) => {
+    const e = perFile[file] || (perFile[file] = Object.fromEntries(RATCHET_KEYS.map(r => [r, 0])));
+    e[k] = k === 'maxDepth' ? Math.max(e[k], n) : e[k] + n;
+  };
+  for (const ch of chains) bump(ch[0].file, 'maxDepth', ch.length);
+  relays.forEach(p => bump(p.file, 'relays'));
+  unconsumed.forEach(p => bump(p.file, 'eventsWithoutSubscriber'));
+  dead.forEach(p => bump(p.file, 'dead'));
+  singleImpl.forEach(x => bump(x.i.file, 'singleImplementationInterfaces'));
+  boolHeavy.forEach(p => bump(p.file, 'manyBooleans'));
+  singleInstance.forEach(o => bump(o.file, 'singleInstance'));
+
   const list = (arr, f) => arr.map(f);
   return {
     generated: new Date().toISOString(),
@@ -288,6 +306,7 @@ function analyze(app, opts) {
       procsWithManyBooleans: boolHeavy.length,
       singleInstanceCodeunits: singleInstance.length,
     },
+    perFile,
     details: {
       deepestChains: deepChains.map(ch => ({ depth: ch.length, chain: ch.map(id), start: loc(ch[0]) })),
       relays: list(relays, p => ({ proc: id(p), at: loc(p), file: p.file })),
@@ -305,6 +324,21 @@ function changedFiles(appDir, ref) {
   const r = spawnSync('git', ['diff', '--name-only', '--relative', ref, '--', '.'], { cwd: appDir, encoding: 'utf8' });
   if (r.status !== 0) { console.error(`git diff ${ref} failed: ${r.stderr}`); return null; }
   return new Set(r.stdout.split(/\r?\n/).filter(f => f.toLowerCase().endsWith('.al')));
+}
+
+// Files (changed ones when --changed is given) whose per-file counts grew against the baseline.
+// Events without subscriber only count on a PTE: on a Product app they are the public surface.
+function ratchet(res, base, changed, level) {
+  if (!base.perFile) throw new Error('ratchet baseline has no perFile section — regenerate it with this version of al-metrics');
+  const keys = RATCHET_KEYS.filter(k => k !== 'eventsWithoutSubscriber' || level !== 'product');
+  const files = changed ? [...changed] : Object.keys(res.perFile);
+  const regressions = [];
+  for (const f of files) {
+    const cur = res.perFile[f], old = base.perFile[f] || {};
+    if (!cur) continue;
+    for (const k of keys) if ((cur[k] || 0) > (old[k] || 0)) regressions.push({ file: f, metric: k, before: old[k] || 0, after: cur[k] });
+  }
+  return regressions;
 }
 
 function toMarkdown(res, opts, baseline, changed) {
@@ -343,6 +377,11 @@ function toMarkdown(res, opts, baseline, changed) {
     for (const x of sel.slice(0, 25)) out.push('- ' + fmt(x));
     if (sel.length > 25) out.push(`- … ${sel.length - 25} more (see JSON)`);
   };
+  if (res.ratchet) {
+    out.push('', '## Ratchet', '');
+    if (!res.ratchet.length) out.push('No regression in the changed files.');
+    else for (const r of res.ratchet) out.push(`- ⛔ ${r.file} — ${r.metric}: ${r.before} → ${r.after}`);
+  }
   const d = res.details;
   section('Deepest call chains', d.deepestChains.map(x => ({ ...x, file: x.start.split(':')[0] })), x => `depth ${x.depth} — ${x.chain.join(' → ')} (${x.start})`);
   section('Relay procedures', d.relays, x => `${x.proc} (${x.at})`);
@@ -365,10 +404,12 @@ function main() {
   const res = analyze(parseApp(appDir), opts);
   const baseline = opts.baseline ? JSON.parse(fs.readFileSync(opts.baseline, 'utf8')) : null;
   const changed = opts.changed ? changedFiles(appDir, opts.changed) : null;
+  if (opts.ratchet) res.ratchet = ratchet(res, JSON.parse(fs.readFileSync(opts.ratchet, 'utf8')), changed, (opts.level || '').toLowerCase());
   const md = toMarkdown(res, opts, baseline, changed);
   if (opts.json) fs.writeFileSync(opts.json, JSON.stringify(res, null, 2));
   if (opts.md) fs.writeFileSync(opts.md, md);
   if (!opts.md) process.stdout.write(md);
+  if (res.ratchet && res.ratchet.length) process.exit(3);
 }
 
 main();
